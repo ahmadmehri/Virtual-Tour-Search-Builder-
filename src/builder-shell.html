@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>VT Search Builder — add a search box to any 3DVista tour</title>
+<style>
+  :root{ --bg:#0e1014; --panel:#171a20; --panel2:#1e222a; --fg:#f6f8fb; --muted:#c2cad4;
+         --accent:#2da3ff; --line:rgba(255,255,255,.12); --ok:#3ee594; --warn:#ffb05c; }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
+  a{color:var(--accent);}
+  .wrap{max-width:920px;margin:0 auto;padding:28px 20px 80px;}
+  header h1{margin:0 0 4px;font-size:24px;letter-spacing:.2px;}
+  header p{margin:0;color:var(--muted);font-size:14px;}
+  .head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+  .head-row #newSession{flex:0 0 auto;white-space:nowrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .rb-logo{background:url('__LOGO_DATA_URI__') center/cover no-repeat;border-radius:10px;flex:0 0 auto;border:1px solid var(--line);}
+  .brand .rb-logo{width:46px;height:46px;}
+  .by-line{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .by-line a{color:var(--accent);text-decoration:none;font-weight:600;}
+  .by-line a:hover{text-decoration:underline;}
+  .yt-btn{display:inline-flex;align-items:center;gap:8px;background:#ff0000;color:#fff;border:0;border-radius:9px;
+          padding:9px 16px;font-size:14px;font-weight:700;text-decoration:none;white-space:nowrap;}
+  .yt-btn:hover{background:#d90000;}
+  .yt-btn svg{width:20px;height:20px;fill:#fff;}
+  .promo{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:26px;background:var(--panel);
+         border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
+  .promo .rb-logo{width:60px;height:60px;}
+  .promo-txt{flex:1;min-width:180px;}
+  .promo-txt h4{margin:0 0 3px;font-size:15px;}
+  .promo-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+         font-size:11px;padding:2px 9px;border-radius:20px;margin-left:8px;vertical-align:middle;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px;}
+  .step{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:10px;font-weight:600;}
+  #drop{border:2px dashed rgba(255,255,255,.18);border-radius:14px;padding:34px 18px;text-align:center;
+        transition:.18s;cursor:pointer;background:var(--panel2);}
+  #drop.hover{border-color:var(--accent);background:rgba(45,163,255,.08);}
+  #drop .big{font-size:16px;margin-bottom:6px;}
+  #drop .small{color:var(--muted);font-size:13px;}
+  input[type=file]{display:none;}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#06121f;border:0;border-radius:10px;
+       padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;}
+  .btn.secondary{background:var(--panel2);color:var(--fg);border:1px solid var(--line);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .disabled-link{opacity:.45;pointer-events:none;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
+  .stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .stat b{font-size:22px;display:block;}
+  .stat span{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.4px;}
+  label.field{display:block;font-size:13px;color:var(--muted);margin:0 0 4px;}
+  select,input[type=text],input[type=color]{background:var(--panel2);color:var(--fg);border:1px solid var(--line);
+       border-radius:8px;padding:8px 10px;font-size:14px;width:100%;}
+  input[type=color]{height:38px;padding:3px;}
+  .opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media(max-width:640px){.opts{grid-template-columns:1fr;}}
+  .preview{margin-top:14px;}
+  .pv-input{position:relative;}
+  .pv-list{margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden;max-height:320px;overflow-y:auto;}
+  .pv-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05);}
+  .pv-row:last-child{border-bottom:0;}
+  .pv-thumb{flex:0 0 50px;width:50px;height:36px;border-radius:6px;background:#2a2e35 center/cover no-repeat;}
+  .pv-name{font-size:14px;}
+  .pv-sub{font-size:12px;color:var(--muted);}
+  .tag{font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:9px;color:#0c0e11;margin-left:auto;}
+  pre{background:#0a0c0f;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;font-size:13px;}
+  .hide{display:none;}
+  .note{color:var(--muted);font-size:13px;}
+  ol{padding-left:20px;} ol li{margin:6px 0;}
+  .ok{color:var(--ok);} .warn{color:var(--warn);}
+  code{background:#0a0c0f;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:13px;}
+  .callout{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;font-size:13px;background:var(--panel2);}
+  .callout b{color:var(--fg);}
+  .callout.rec-zip{border-color:rgba(38,222,129,.45);background:rgba(38,222,129,.07);}
+  .callout.rec-two{border-color:rgba(255,159,67,.5);background:rgba(255,159,67,.08);}
+  .optblock{border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:8px;}
+  .optblock h4{margin:0 0 6px;font-size:15px;}
+  ul.trade{list-style:none;padding:0;margin:10px 0 0;font-size:13px;}
+  ul.trade li{padding:3px 0 3px 24px;position:relative;color:var(--muted);}
+  ul.trade li.good:before{content:'✓';position:absolute;left:2px;color:var(--ok);font-weight:700;}
+  ul.trade li.bad:before{content:'!';position:absolute;left:6px;color:var(--warn);font-weight:700;}
+  .warn-box{background:rgba(255,159,67,.09);border:1px solid rgba(255,159,67,.5);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:13px;}
+  .warn-box ol{margin:8px 0 0;}
+  @keyframes vtpulse{0%{box-shadow:0 0 0 0 rgba(45,163,255,.55);}70%{box-shadow:0 0 0 12px rgba(45,163,255,0);}100%{box-shadow:0 0 0 0 rgba(45,163,255,0);}}
+  .btn.pulse{animation:vtpulse 1.2s ease-out 2;}
+  .toggles{display:flex;flex-wrap:wrap;gap:10px;}
+  .toggle{display:inline-flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;user-select:none;font-size:13px;}
+  .toggle input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;margin:0;}
+  .toggle .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
+  .toggle .cnt{color:var(--muted);}
+  .toggle.off{opacity:.5;}
+  .rename-list{max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:10px;}
+  .rn-group{padding:7px 11px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);background:rgba(255,255,255,.04);position:sticky;top:0;}
+  .rn-row{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border-bottom:1px solid rgba(255,255,255,.05);}
+  .rn-row:last-child{border-bottom:0;}
+  .rn-thumb{flex:0 0 46px;width:46px;height:34px;border-radius:6px;background:#2a2e35 center/cover no-repeat;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .rn-thumb .dot{width:9px;height:9px;border-radius:50%;}
+  .rn-main{flex:1;min-width:0;}
+  .rn-orig{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
+  .rn-orig b{color:var(--fg);font-weight:600;}
+  .rn-fields{display:flex;gap:8px;flex-wrap:wrap;}
+  .rn-fields .fwrap{flex:1;min-width:140px;}
+  .rn-fields .flabel{font-size:10.5px;color:var(--muted);margin:0 0 2px 2px;}
+  .rn-row input{width:100%;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:13px;}
+  .rn-row input:focus{outline:none;border-color:var(--accent);}
+  .rn-row input.changed{border-color:var(--accent);background:rgba(45,163,255,.08);}
+  .rn-auto{font-size:10.5px;color:var(--muted);margin-left:6px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;white-space:nowrap;}
+  .rn-auto-warn{color:var(--warn);border-color:var(--warn);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="head-row">
+      <div class="brand">
+        <a class="rb-logo" href="https://www.youtube.com/@rockbench" target="_blank" rel="noopener" title="RockBench on YouTube"></a>
+        <div>
+          <h1>VT Search Builder <span class="badge">3DVista · offline-ready</span></h1>
+          <p>Drop an exported 3DVista tour folder. Get back a self-contained search box that runs inside the tour — online or offline.</p>
+          <div class="by-line">by <a href="https://www.youtube.com/@rockbench" target="_blank" rel="noopener">RockBench</a> · 3DVista &amp; geology tutorials on YouTube</div>
+        </div>
+      </div>
+      <button id="newSession" class="btn secondary hide" title="Clear everything and load a different tour">↺ New session</button>
+    </div>
+  </header>
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <div class="step">Step 1 · Load your exported tour</div>
+    <div id="localTip" class="callout rec-two hide">
+      <b>Drag-and-drop didn’t work here.</b> Some browsers (notably <b>Chrome</b>) block dragging a <i>folder</i> onto a page opened as a local file.
+      Please use the <b>“📁 Choose tour folder…”</b> button below — it always works. (Folder drag-and-drop <i>does</i> work in <b>Firefox</b>, or when this tool is opened from a web address.)
+    </div>
+    <div id="drop">
+      <div class="big">📁 Choose your exported tour folder</div>
+      <div class="small">Click the button below — or drag the folder here (works on hosted pages).</div>
+    </div>
+    <div class="row" style="margin-top:12px;align-items:center;">
+      <button id="pickBtn" class="btn">📁 Choose tour folder…</button>
+      <span class="note">Most reliable option — works in every browser.</span>
+    </div>
+    <input id="picker" type="file" webkitdirectory directory multiple/>
+    <p id="status" class="note" style="margin-top:12px;"></p>
+    <p class="note" style="margin-top:6px;">Nothing is uploaded — everything runs locally in your browser.</p>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step2" class="card hide">
+    <div class="step">Step 2 · What was found</div>
+    <div id="stats" class="grid"></div>
+
+    <div style="margin-top:18px;">
+      <div class="step">Searchable items · tick what visitors can find</div>
+      <div id="typeToggles" class="toggles"></div>
+      <p class="note" style="margin-top:10px;"><b>Scenes</b> and <b>hotspots</b> open reliably, so they're on by default.
+        <b>Photos, albums and videos are off</b> because 3DVista's player usually can't open them from a script — in most tours
+        they're shown <i>through</i> a hotspot pop-up or the menu, with no way for an outside script to open them on their own
+        (so they'd appear in search but do nothing).
+        <br><b>If you still want one in the search:</b> tick it here — and in 3DVista give the <b>hotspot</b> that opens it a clear
+        tooltip (e.g. “Open photo album”). Searching that wording then finds the hotspot and opens the pop-up — the tour's own way of
+        showing it. (Tick a type only if it actually opens when you test the finished tour.)</p>
+    </div>
+
+    <details open style="margin-top:18px;">
+      <summary class="step" style="cursor:pointer;">✎ Names &amp; search keywords <span class="note">— optional, but very useful</span></summary>
+      <div class="callout" style="margin-top:8px;">
+        Each element has two optional boxes. <b>You never lose the original name — it stays searchable either way.</b>
+        <ul style="margin:8px 0 0;padding-left:20px;">
+          <li><b>Display name</b> — a friendlier label to <i>show and search</i> instead of a vague one. <span class="note">e.g. rename “<b>01</b>” → “<b>Kitchen counter</b>”, or “<b>Image</b>” → “<b>Floor plan</b>”.</span></li>
+          <li><b>Extra search words</b> — other words a visitor might type to find this item, separated by commas. The element still opens; these just help people <i>find</i> it. <span class="note">e.g. for a scene named “<b>Entrance</b>”, add: <b>front door, main door, lobby, foyer, start</b> → now searching any of those lands on Entrance.</span></li>
+        </ul>
+        <div class="note" style="margin-top:8px;">💡 Tip: think of how a first-time visitor might describe the place in their own words, and add those. Works offline — the words are saved right inside your tour.</div>
+      </div>
+      <div id="renameList" class="rename-list"></div>
+    </details>
+
+    <div style="margin-top:18px;">
+      <div class="step">Appearance</div>
+      <div class="opts">
+        <div>
+          <label class="field">Search icon position</label>
+          <select id="optPos">
+            <option value="top-right">Top right</option>
+            <option value="top-center">Top center</option>
+            <option value="top-left">Top left</option>
+            <option value="bottom-right">Bottom right</option>
+            <option value="bottom-center">Bottom center</option>
+            <option value="bottom-left">Bottom left</option>
+          </select>
+        </div>
+        <div>
+          <label class="field">Accent colour</label>
+          <input id="optAccent" type="color" value="#2da3ff"/>
+        </div>
+        <div>
+          <label class="field">Placeholder text</label>
+          <input id="optPlaceholder" type="text" value="Search the tour…"/>
+        </div>
+      </div>
+      <label class="toggle" style="margin-top:14px;">
+        <input id="optBrowseAll" type="checkbox" checked/>
+        <span>Let visitors <b>browse all items</b> — show the full list (grouped by type) when the search box is empty.</span>
+      </label>
+      <label class="toggle" style="margin-top:10px;">
+        <input id="optGuided" type="checkbox" checked/>
+        <span>Enable <b>guided navigation</b> — when a scene result has a path, visitors get a “Guide me” option that walks them there scene-by-scene.</span>
+      </label>
+    </div>
+
+    <div class="preview">
+      <div class="step" style="margin-top:18px;">Live preview <span id="pvHint" class="note"></span></div>
+      <div class="pv-input"><input id="pvQuery" type="text" placeholder="Type to search — or leave empty to browse all…"/></div>
+      <div id="pvList" class="pv-list"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div id="step3" class="card hide">
+    <div class="step">Step 3 · Get your search-enabled tour</div>
+
+    <!-- live recommendation based on the tour's size -->
+    <div id="sizeNote" class="callout"></div>
+
+    <!-- OPTION A — full zip -->
+    <div class="optblock">
+      <h4>Option A · Export the whole tour as a ready-to-publish .zip <span class="badge">simplest</span></h4>
+      <button id="exportZip" class="btn" style="font-size:15px;padding:12px 20px;margin-top:6px;">⬇ Export published tour (.zip)</button>
+      <p id="zipStatus" class="note" style="margin:10px 0 0;"></p>
+      <ul class="trade">
+        <li class="good"><b>Easiest:</b> unzip it, upload that folder, done — no editing at all.</li>
+        <li class="good"><b>Safe:</b> your original tour folder is never touched — this only creates a new zip.</li>
+        <li class="bad"><b>Heavy on memory:</b> it rebuilds the entire tour (all media) in your browser. A very large tour (several GB) may be slow, or fail on a low-RAM computer.</li>
+      </ul>
+      <p class="note" style="margin-top:8px;">👉 <b>Choose this for normal-sized tours</b> (up to roughly 1&nbsp;GB).</p>
+    </div>
+
+    <!-- OPTION B — two files -->
+    <details class="optblock" style="margin-top:14px;">
+      <summary style="cursor:pointer;font-size:15px;font-weight:600;">Option B · Get just the two small files <span class="badge">best for very large tours</span></summary>
+      <div class="row" style="margin-top:12px;">
+        <a id="dlJs" class="btn secondary">⬇ vtsearch.js</a>
+        <a id="dlHtml" class="btn secondary">⬇ patched index.htm</a>
+      </div>
+      <ul class="trade">
+        <li class="good"><b>Tiny &amp; safe on size:</b> it never reads your media — no size limit, no memory worries, however heavy the tour is.</li>
+        <li class="bad"><b>You install them yourself</b> (two short steps below).</li>
+      </ul>
+      <div class="warn-box">
+        <b>⚠ Installing it yourself — protect your original files:</b>
+        <ol>
+          <li><b>Copy <code>vtsearch.js</code></b> into your tour folder, right next to <code>index.htm</code>. This is a brand-new file, so it won't overwrite anything.</li>
+          <li>The downloaded <b><code>index.htm</code> will REPLACE the one in your tour folder.</b> Before you overwrite it, <b>make a backup copy of your original <code>index.htm</code></b> (e.g. rename it <code>index-original.htm</code>) so you can always go back.</li>
+          <li><b>Prefer not to replace it?</b> Keep your own <code>index.htm</code> and just add this single line right before <code>&lt;/body&gt;</code>:
+            <pre style="margin:6px 0 0;">&lt;script src="vtsearch.js?v=1"&gt;&lt;/script&gt;</pre></li>
+        </ol>
+      </div>
+      <p class="note" style="margin-top:10px;">👉 <b>Choose this if the tour is very large</b>, or if Option A is slow or fails.</p>
+    </details>
+
+    <p class="note" style="margin-top:14px;">Either option: <b>nothing is uploaded anywhere</b> — it all runs in your browser, and the finished search works the same online or offline. Re-running this tool later just makes a newer <code>vtsearch.js</code>; safe to overwrite the old one.</p>
+
+    <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:16px;">
+      <button id="newSession2" class="btn secondary">↺ Start a new session (load another tour)</button>
+      <p class="note" style="margin-top:8px;">Finished with this tour? Clear everything and start over with a different one. Anything you already downloaded stays safely on your computer.</p>
+    </div>
+  </div>
+
+  <!-- promo / credit -->
+  <footer class="promo">
+    <a class="rb-logo" href="https://www.youtube.com/@rockbench" target="_blank" rel="noopener" title="RockBench on YouTube"></a>
+    <div class="promo-txt">
+      <h4>Made with VT Search Builder — by RockBench</h4>
+      <div class="note">Find this useful? Subscribe for more 3DVista virtual-tour and rock-engineering / geology tutorials.</div>
+    </div>
+    <div class="promo-actions">
+      <a class="yt-btn" href="https://www.youtube.com/channel/UC6OwZWavuKkB1e7GN-9UA1g?sub_confirmation=1" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+        Subscribe
+      </a>
+      <a href="https://www.youtube.com/@rockbench" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;font-weight:600;">Visit channel ↗</a>
+    </div>
+  </footer>
+</div>
+
+<!-- ===== Tour parser (runs here in the builder) ===== -->
+<script>
+/*__PARSER__*/
+</script>
+
+<!-- ===== Widget source (shipped verbatim into vtsearch.js) ===== -->
+<script type="text/plain" id="vt-widget-src">
+/*__WIDGET__*/
+</script>
+
+<!-- ===== Builder UI logic ===== -->
+<script>
+(function(){
+  'use strict';
+  var WIDGET_SRC = document.getElementById('vt-widget-src').textContent;
+  var TYPE_COLOR = { scene:'#2da3ff', hotspot:'#ff9f43', photo:'#26de81', video:'#a55eea', album:'#fd79a8' };
+  var TYPE_LABEL = { scene:'Scene', hotspot:'Hotspot', photo:'Photo', video:'Video', album:'Album' };
+
+  var state = { index:null, indexHtmlText:null, indexHtmlName:'index.htm' };
+  var $ = function(id){ return document.getElementById(id); };
+
+  // Guard: the analysis engine must be present. If someone opened the internal
+  // build file (builder-shell.html) instead of VT-Search-Builder.html, it won't be.
+  var ENGINE_OK = (typeof VTParser !== 'undefined') && WIDGET_SRC && WIDGET_SRC.indexOf('VT_SEARCH_DATA') >= 0;
+
+  // ---- file intake -------------------------------------------------------
+  var drop = $('drop'), picker = $('picker');
+  drop.addEventListener('click', function(){ picker.click(); });
+  $('pickBtn').addEventListener('click', function(e){ e.stopPropagation(); picker.click(); });
+
+  // Shown ONLY after a real drag-and-drop attempt fails (e.g. Chrome blocking a
+  // folder drop on a local file). Not shown proactively — drag works in Firefox.
+  function dropFailedHelp(msg){
+    setStatus(msg, true);
+    var tip = $('localTip'); if(tip) tip.classList.remove('hide');
+    var b = $('pickBtn'); if(b){ b.classList.add('pulse'); setTimeout(function(){ b.classList.remove('pulse'); }, 2400); }
+  }
+
+  // Accept a drop ANYWHERE on the page (not just inside the box) and stop the
+  // browser from trying to open the dropped item.
+  function stop(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  ['dragenter','dragover'].forEach(function(e){ window.addEventListener(e, function(ev){ stop(ev); drop.classList.add('hover'); }, false); });
+  ['dragleave','dragend'].forEach(function(e){ window.addEventListener(e, function(ev){ stop(ev); if(e==='dragleave' && ev.relatedTarget) return; drop.classList.remove('hover'); }, false); });
+  window.addEventListener('drop', onDrop, false);
+
+  // Recursively read a dropped directory tree to completion (no timeouts).
+  function readAllEntries(reader){
+    return new Promise(function(resolve){
+      var all=[];
+      (function next(){
+        reader.readEntries(function(batch){
+          if(!batch || !batch.length) return resolve(all);
+          all = all.concat(Array.prototype.slice.call(batch));
+          next();                       // readEntries returns at most ~100 at a time
+        }, function(){ resolve(all); });
+      })();
+    });
+  }
+  function walkEntry(entry, path){
+    return new Promise(function(resolve){
+      if(!entry){ resolve([]); return; }
+      if(entry.isFile){
+        entry.file(function(f){ try{ f._rel = path + f.name; }catch(e){} resolve([f]); }, function(){ resolve([]); });
+      } else if(entry.isDirectory){
+        readAllEntries(entry.createReader()).then(function(entries){
+          Promise.all(entries.map(function(e){ return walkEntry(e, path + entry.name + '/'); }))
+                 .then(function(arrs){ resolve(Array.prototype.concat.apply([], arrs)); });
+        });
+      } else resolve([]);
+    });
+  }
+
+  function onDrop(ev){
+    stop(ev); drop.classList.remove('hover');
+    var dt = ev.dataTransfer; if(!dt) return;
+    // Grab entries synchronously (dataTransfer.items is invalidated after this turn).
+    var entries = [];
+    if(dt.items && dt.items.length){
+      for(var i=0;i<dt.items.length;i++){
+        var getEntry = dt.items[i].webkitGetAsEntry || dt.items[i].getAsEntry;
+        var en = getEntry ? getEntry.call(dt.items[i]) : null;
+        if(en) entries.push(en);
+      }
+    }
+    if(entries.length){
+      setStatus('Reading the tour folder…');
+      Promise.all(entries.map(function(e){ return walkEntry(e, ''); })).then(function(arrs){
+        var files = Array.prototype.concat.apply([], arrs);
+        if(!files.length){ dropFailedHelp('Drag-and-drop didn’t read that folder — please use the “📁 Choose tour folder…” button (see the tip above).'); return; }
+        handleFiles(files);
+      });
+    } else if(dt.files && dt.files.length){
+      handleFiles(Array.prototype.slice.call(dt.files));   // some browsers only expose .files
+    } else {
+      dropFailedHelp('Drag-and-drop didn’t read that folder — please use the “📁 Choose tour folder…” button (see the tip above).');
+    }
+  }
+
+  picker.addEventListener('change', function(){ handleFiles(Array.prototype.slice.call(picker.files)); });
+
+  function relPath(f){ return f._rel || f.webkitRelativePath || f.name; }
+  function readText(f){ return new Promise(function(res){ var r=new FileReader(); r.onload=function(){res(r.result);}; r.onerror=function(){res('');}; r.readAsText(f); }); }
+
+  function handleFiles(files){
+    if(!ENGINE_OK){
+      setStatus('This page didn\'t load its engine. Make sure you opened VT-Search-Builder.html (not builder-shell.html or a source file).', true);
+      return;
+    }
+    if(!files || !files.length){ setStatus('No files received. Use the “Choose tour folder…” button.', true); return; }
+    var byPath = {};
+    files.forEach(function(f){ byPath[relPath(f).replace(/\\/g,'/')] = f; });
+    var paths = Object.keys(byPath);
+    state.files = byPath;                 // keep EVERY file for the full re-export
+    state.totalBytes = paths.reduce(function(a,p){ return a + (byPath[p].size||0); }, 0);
+    state.fileCount = paths.length;
+    var find = function(test){ var p = paths.find(test); return p?byPath[p]:null; };
+
+    // Read EVERY top-level script*.js (dual-skin tours may split data across
+    // script_general.js / script_desktop.js / script_mobile.js, etc.).
+    var scriptFiles = paths.filter(function(p){ return /(^|\/)script[^\/]*\.js$/i.test(p) && !/(^|\/)lib\//i.test(p); }).map(function(p){return byPath[p];});
+    var fIndex = find(function(p){ return /(^|\/)index\.html?$/i.test(p); });
+    var locFiles = paths.filter(function(p){ return /(^|\/)locale\/[^/]+\.txt$/i.test(p); }).map(function(p){return byPath[p];});
+
+    if(!scriptFiles.length){ setStatus('Could not find any script*.js — is this a 3DVista HTML (website) export?', true); return; }
+    setStatus('Reading ' + files.length + ' files…');
+
+    var nScripts = scriptFiles.length;
+    var locNames = locFiles.map(function(f){ return relPath(f).split('/').pop().replace(/\.txt$/i,''); });
+    Promise.all(scriptFiles.map(readText)
+                  .concat([ fIndex?readText(fIndex):Promise.resolve(null) ])
+                  .concat(locFiles.map(readText))).then(function(out){
+      try{
+        var scripts = out.slice(0, nScripts);
+        var indexHtml = out[nScripts];
+        var localeTexts = out.slice(nScripts + 1);
+        var locales={};
+        locFiles.forEach(function(f,i){ locales[locNames[i]] = localeTexts[i]; });
+        if(fIndex){ state.indexHtmlText = indexHtml; state.indexHtmlName = relPath(fIndex).split('/').pop();
+                    state.indexRel = relPath(fIndex).replace(/\\/g,'/'); }
+        else { state.indexHtmlText = null; state.indexRel = null; }
+
+        var res = VTParser.parseTour({ scripts:scripts, locales:locales });
+        if(!res.items.length){ setStatus('Parsed the tour but found nothing searchable (the scenes/photos may be unnamed in 3DVista).', true); return; }
+        state.index = res;
+        // Only types the player can reliably OPEN are on by default. Photos/albums/
+        // videos usually can't be opened by a script, so they start unticked (the
+        // publisher can opt them in — see the note under the toggles).
+        var RELIABLE = { scene:true, hotspot:true };
+        state.enabledTypes = {};
+        Object.keys(res.counts).forEach(function(t){ state.enabledTypes[t] = !!RELIABLE[t]; });
+        state.renames = {};           // itemKey -> custom name
+        state.keywords = {};          // itemKey -> extra search words (comma-separated)
+        state.thumbData = {};         // thumb path -> data URL (cache)
+        setStatus('Found ' + res.items.length + ' searchable items in ' + (locNames.length||1) + ' locale(s). ✓');
+        renderStats(); renderTypeToggles(); renderRenameList(); renderPreview(''); buildOutputs(); renderSizeNote();
+        $('step2').classList.remove('hide'); $('step3').classList.remove('hide');
+        $('newSession').classList.remove('hide');
+      }catch(err){
+        setStatus('Something went wrong while analyzing the tour: ' + (err && err.message ? err.message : err), true);
+      }
+    });
+  }
+
+  function setStatus(msg, bad){ var s=$('status'); s.textContent=msg; s.className='note '+(bad?'warn':'ok'); }
+
+  function humanSize(b){
+    if(b>=1073741824) return (b/1073741824).toFixed(b>=10737418240?0:1)+' GB';
+    if(b>=1048576) return Math.round(b/1048576)+' MB';
+    return Math.max(1,Math.round(b/1024))+' KB';
+  }
+  // Recommend an option based on how heavy the tour is.
+  var BIG_TOUR = 1073741824; // ~1 GB
+  function renderSizeNote(){
+    var el=$('sizeNote'), bytes=state.totalBytes||0, sz=humanSize(bytes);
+    if(bytes >= BIG_TOUR){
+      el.className='callout rec-two';
+      el.innerHTML='<b>Heads-up: this is a large tour (~'+sz+', '+state.fileCount+' files).</b> '+
+        'For tours this big, <b>Option B (the two small files)</b> is the safer choice — Option A may be slow or run out of memory while zipping everything. See both options below.';
+    } else {
+      el.className='callout rec-zip';
+      el.innerHTML='<b>This tour is '+sz+' ('+state.fileCount+' files).</b> '+
+        'That\'s a comfortable size — <b>Option A (one-click .zip)</b> is recommended. Option B is also available if you prefer to add the files yourself.';
+    }
+  }
+
+  // ---- stats + preview ---------------------------------------------------
+  function renderStats(){
+    var c = state.index.counts, host=$('stats'); host.innerHTML='';
+    var order=['scene','hotspot','photo','video','album'];
+    order.forEach(function(t){ if(!c[t]) return;
+      var d=document.createElement('div'); d.className='stat';
+      d.innerHTML='<b style="color:'+TYPE_COLOR[t]+'">'+c[t]+'</b><span>'+TYPE_LABEL[t]+(c[t]>1?'s':'')+'</span>';
+      host.appendChild(d);
+    });
+    var total=document.createElement('div'); total.className='stat';
+    total.innerHTML='<b>'+state.index.items.length+'</b><span>Total</span>'; host.appendChild(total);
+  }
+
+  // items the user has chosen to make searchable
+  function enabledItems(){
+    var en = state.enabledTypes || {};
+    return state.index.items.filter(function(it){ return en[it.type]; });
+  }
+
+  function itemKey(it){ return it.type+'|'+it.id+'|'+(it.panoId||''); }
+
+  function parseKeywords(str){ return String(str||'').split(/[,;\n]+/).map(function(s){return s.trim();}).filter(Boolean); }
+
+  // Apply the user's renames + keywords: produce the display name and the list of
+  // extra searchable terms (original name + any keywords typed by the publisher).
+  function applyRename(it){
+    var key=itemKey(it), custom=(state.renames||{})[key];
+    var out={}; for(var k in it) out[k]=it[k];
+    var aliases=[];
+    if(custom && custom.trim() && custom.trim()!==it.label){
+      out.name=custom.trim();
+      if(it.label && it.label!==out.name) aliases.push(it.label);   // keep original searchable
+    } else { out.name=it.label!=null?it.label:it.name; }
+    // any name the parser found but didn't choose as primary (e.g. a tooltip AND a
+    // distinct 3DVista editor name) stays searchable too
+    (it.altNames||[]).forEach(function(n){ if(n && n!==out.name && aliases.indexOf(n)<0) aliases.push(n); });
+    parseKeywords((state.keywords||{})[key]).forEach(function(kw){ if(aliases.indexOf(kw)<0 && kw!==out.name) aliases.push(kw); });
+    out.aliases=aliases;
+    return out;
+  }
+  function finalItems(){ return enabledItems().map(applyRename); }
+
+  // Find the dropped File for a tour-relative thumb path (e.g. "media/x_t.jpg").
+  function findThumbFile(thumbPath){
+    if(!thumbPath || !state.files) return null;
+    var want=thumbPath.replace(/^\/+/,'').toLowerCase();
+    var paths=Object.keys(state.files);
+    for(var i=0;i<paths.length;i++){ if(paths[i].toLowerCase().endsWith(want)) return state.files[paths[i]]; }
+    return null;
+  }
+  // Load a thumbnail as a DATA URL (base64) and apply it to `el`. Data URLs render
+  // even when the tool is opened from file:// (blob: URLs get a null origin there
+  // and Chrome refuses to paint them — this was the "thumbnails don't show" bug).
+  function setThumb(el, thumbPath){
+    if(!el || !thumbPath) return;
+    var cached=state.thumbData[thumbPath];
+    if(cached){ el.style.backgroundImage="url('"+cached+"')"; return; }
+    var f=findThumbFile(thumbPath); if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){ state.thumbData[thumbPath]=r.result; el.style.backgroundImage="url('"+r.result+"')"; };
+    r.onerror=function(){};
+    try{ r.readAsDataURL(f); }catch(e){}
+  }
+
+  function renderRenameList(){
+    var host=$('renameList'); if(!host) return;
+    host.innerHTML='';
+    var order=['scene','hotspot','photo','video','album'];
+    order.forEach(function(t){
+      var its=state.index.items.filter(function(i){return i.type===t;});
+      if(!its.length) return;
+      var h=document.createElement('div'); h.className='rn-group';
+      h.innerHTML='<span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+TYPE_COLOR[t]+';margin-right:7px;"></span>'+TYPE_LABEL[t]+'s';
+      host.appendChild(h);
+      its.forEach(function(it){
+        var key=itemKey(it), curName=(state.renames||{})[key]||'', curKw=(state.keywords||{})[key]||'';
+        var row=document.createElement('div'); row.className='rn-row';
+        var thumbEl=document.createElement('div'); thumbEl.className='rn-thumb';
+        thumbEl.innerHTML='<span class="dot" style="background:'+TYPE_COLOR[t]+'"></span>';
+        setThumb(thumbEl, it.thumb);     // async fills the background image (data URL)
+
+        var main=document.createElement('div'); main.className='rn-main';
+        var orig=document.createElement('div'); orig.className='rn-orig';
+        var srcNote = it.nameSource==='generated'
+          ? ' <span class="rn-auto rn-auto-warn" title="No tooltip or editor name was found for this item — this is a placeholder. Give it a real name below.">needs a name</span>'
+          : it.nameSource==='structural'
+            ? ' <span class="rn-auto" title="No public tooltip/label was set in 3DVista for this item — using its internal editor name instead.">auto-named</span>'
+            : '';
+        orig.innerHTML='Original name: <b>'+esc(it.label||'(unnamed)')+'</b>'+srcNote;
+        var fields=document.createElement('div'); fields.className='rn-fields';
+
+        var w1=document.createElement('div'); w1.className='fwrap';
+        w1.innerHTML='<div class="flabel">Display name (optional)</div>';
+        var inName=document.createElement('input'); inName.type='text'; inName.placeholder='Rename it — e.g. “Main Entrance”'; inName.value=curName;
+        if(curName) inName.className='changed';
+        inName.addEventListener('input', function(){ var v=inName.value.trim();
+          if(v) state.renames[key]=v; else delete state.renames[key];
+          inName.classList.toggle('changed', !!v); renderPreview($('pvQuery').value); buildOutputs(); });
+        w1.appendChild(inName);
+
+        var w2=document.createElement('div'); w2.className='fwrap';
+        w2.innerHTML='<div class="flabel">Extra search words (comma-separated)</div>';
+        var inKw=document.createElement('input'); inKw.type='text'; inKw.placeholder='e.g. front door, lobby, start, foyer'; inKw.value=curKw;
+        if(curKw) inKw.className='changed';
+        inKw.addEventListener('input', function(){ var v=inKw.value;
+          if(v.trim()) state.keywords[key]=v; else delete state.keywords[key];
+          inKw.classList.toggle('changed', !!v.trim()); renderPreview($('pvQuery').value); buildOutputs(); });
+        w2.appendChild(inKw);
+
+        fields.appendChild(w1); fields.appendChild(w2);
+        main.appendChild(orig); main.appendChild(fields);
+        row.appendChild(thumbEl); row.appendChild(main); host.appendChild(row);
+      });
+    });
+  }
+
+  function renderTypeToggles(){
+    var host=$('typeToggles'), c=state.index.counts, order=['scene','hotspot','photo','video','album'];
+    var RELIABLE={scene:true,hotspot:true};
+    host.innerHTML='';
+    order.forEach(function(t){ if(!c[t]) return;
+      var lab=document.createElement('label'); lab.className='toggle'+(state.enabledTypes[t]?'':' off');
+      var caveat = RELIABLE[t] ? '' : ' <span class="cnt" title="3DVista usually can’t open these from a script">· may not open</span>';
+      lab.innerHTML='<input type="checkbox" '+(state.enabledTypes[t]?'checked':'')+'/>'+
+        '<span class="dot" style="background:'+TYPE_COLOR[t]+'"></span>'+
+        '<span>'+TYPE_LABEL[t]+(c[t]>1?'s':'')+'</span><span class="cnt">'+c[t]+'</span>'+caveat;
+      var cb=lab.querySelector('input');
+      cb.addEventListener('change', function(){
+        state.enabledTypes[t]=cb.checked;
+        lab.classList.toggle('off', !cb.checked);
+        renderPreview($('pvQuery').value); buildOutputs();
+      });
+      host.appendChild(lab);
+    });
+  }
+
+  // Same case/accent-insensitive + typo-tolerant matching the widget ships with.
+  function pvNorm(s){ s=String(s==null?'':s).toLowerCase(); if(s.normalize) s=s.normalize('NFKD').replace(/[̀-ͯ]/g,''); return s; }
+  function pvWords(s){ return pvNorm(s).split(/[^a-z0-9]+/).filter(Boolean); }
+  function pvLev(a,b){ var m=a.length,n=b.length; if(!m)return n; if(!n)return m; var prev=[],i,j; for(j=0;j<=n;j++)prev[j]=j;
+    for(i=1;i<=m;i++){ var cur=[i]; for(j=1;j<=n;j++){ var c=a.charCodeAt(i-1)===b.charCodeAt(j-1)?0:1; cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+c);} prev=cur; } return prev[n]; }
+  function pvSim(a,b){ var L=Math.max(a.length,b.length); return L?1-pvLev(a,b)/L:0; }
+  function pvTermVsWord(t,w){ if(w===t)return 100; if(w.indexOf(t)===0)return 82; if(w.indexOf(t)>=0)return 64;
+    var s=pvSim(t,w); if(s>=0.72)return Math.round(50*s); if(t.length>=4&&pvLev(t,w)<=1)return 48; return 0; }
+  function pvScore(q,it){
+    var names=[it.name].concat(it.aliases||[]);
+    var bestWhole=-1;
+    names.forEach(function(nm){ var n=pvNorm(nm);
+      if(n===q)bestWhole=Math.max(bestWhole,1000); else if(n.indexOf(q)===0)bestWhole=Math.max(bestWhole,800); else if(n.indexOf(q)>=0)bestWhole=Math.max(bestWhole,650); });
+    if(bestWhole>=0) return bestWhole;
+    var hay=[]; names.forEach(function(nm){ hay=hay.concat(pvWords(nm)); });
+    hay=hay.concat(pvWords(TYPE_LABEL[it.type]||'')).concat(pvWords(it.panoLabel||''));
+    var terms=q.split(/\s+/).filter(Boolean), total=0;
+    for(var i=0;i<terms.length;i++){ var t=terms[i],best=0;
+      for(var w=0;w<hay.length;w++){ var v=pvTermVsWord(t,hay[w]); if(v>best)best=v; }
+      if(best===0){ names.forEach(function(nm){ var sN=pvSim(t,pvNorm(nm)); if(sN>=0.7)best=Math.max(best,Math.round(40*sN)); }); }
+      if(best===0)return -1; total+=best;
+    }
+    return total;
+  }
+  function previewSearch(q){
+    q=pvNorm(q).trim();
+    var items=finalItems();
+    if(!q) return items.slice(0,40);
+    return items.map(function(it){ return [pvScore(q,it),it]; })
+      .filter(function(x){return x[0]>=0;}).sort(function(a,b){return b[0]-a[0];})
+      .slice(0,40).map(function(x){return x[1];});
+  }
+
+  function renderPreview(q){
+    var list=$('pvList'), browse=$('optBrowseAll').checked;
+    var hint=$('pvHint'); if(hint) hint.textContent = browse ? '· empty box = full list' : '· empty box = nothing (browsing off)';
+    // when browsing is off, an empty box shows nothing to visitors — mirror that here
+    if(!String(q||'').trim() && !browse){
+      list.innerHTML='<div class="pv-row"><span class="pv-sub">Browsing is off — visitors will type to search; an empty box shows no list.</span></div>';
+      return;
+    }
+    var rows=previewSearch(q); list.innerHTML='';
+    if(!rows.length){ list.innerHTML='<div class="pv-row"><span class="pv-sub">No matches.</span></div>'; return; }
+    rows.forEach(function(it){
+      var sub = it.type==='hotspot'&&it.panoLabel ? 'in '+it.panoLabel : (it.type==='scene'?'Panorama scene':TYPE_LABEL[it.type]);
+      var div=document.createElement('div'); div.className='pv-row';
+      var th=document.createElement('div'); th.className='pv-thumb'; setThumb(th, it.thumb);
+      var meta=document.createElement('div');
+      meta.innerHTML='<div class="pv-name">'+esc(it.name)+'</div><div class="pv-sub">'+esc(sub)+'</div>';
+      var tag=document.createElement('span'); tag.className='tag'; tag.style.background=TYPE_COLOR[it.type]; tag.textContent=TYPE_LABEL[it.type];
+      div.appendChild(th); div.appendChild(meta); div.appendChild(tag);
+      list.appendChild(div);
+    });
+  }
+  $('pvQuery').addEventListener('input', function(){ renderPreview(this.value); });
+
+  // ---- options + output --------------------------------------------------
+  ['optPos','optAccent','optPlaceholder'].forEach(function(id){ $(id).addEventListener('input', buildOutputs); });
+  ['optBrowseAll','optGuided'].forEach(function(id){ $(id).addEventListener('change', function(){ renderPreview($('pvQuery').value); buildOutputs(); }); });
+
+  function config(){
+    return { position:$('optPos').value, accent:$('optAccent').value, placeholder:$('optPlaceholder').value,
+             browseAll:$('optBrowseAll').checked, guided:$('optGuided').checked };
+  }
+  function generateJs(){
+    // strip builder-only fields; keep what the widget needs (incl. label for nav, aliases for search)
+    var items=finalItems().map(function(it){
+      var o={ type:it.type, id:it.id, label:it.label, name:it.name, thumb:it.thumb||null };
+      if(it.aliases&&it.aliases.length) o.aliases=it.aliases;
+      if(it.type==='hotspot'){ o.panoId=it.panoId; o.panoLabel=it.panoLabel; o.overlayId=it.overlayId; }
+      if(it.type==='scene') o.sceneId=it.id;
+      return o;
+    });
+    var idx={ title:state.index.title, locale:state.index.locale, items:items };
+    if($('optGuided').checked && state.index.graph) idx.graph=state.index.graph;
+    return '/* vtsearch.js — generated by VT Search Builder. Search add-on for a 3DVista tour. */\n'+
+           '/* Drop this file next to index.htm and add: <script src="vtsearch.js"><\\/script> */\n'+
+           'window.VT_SEARCH_DATA='+JSON.stringify(idx)+';\n'+
+           'window.VT_SEARCH_CONFIG='+JSON.stringify(config())+';\n'+
+           WIDGET_SRC;
+  }
+  function patchedHtml(){
+    var html=state.indexHtmlText; if(html==null) return null;
+    if(/vtsearch\.js/.test(html)) return html;
+    if(/<\/body>/i.test(html)) return html.replace(/<\/body>/i, '    <script src="vtsearch.js?v=1"><\/script>\n</body>');
+    return html + '\n<script src="vtsearch.js?v=1"><\/script>\n';
+  }
+
+  function buildOutputs(){
+    if(!state.index) return;
+    var nSel = enabledItems().length;
+    var noneSelected = nSel === 0;
+    // disable exports if the user has unticked every type
+    var zip=$('exportZip'); if(zip) zip.disabled = noneSelected;
+    $('dlJs').classList.toggle('disabled-link', noneSelected);
+    if(noneSelected){
+      $('zipStatus').className='note warn';
+      $('zipStatus').textContent='Tick at least one type of item above to build the search.';
+    } else if(/at least one type/.test($('zipStatus').textContent)){
+      $('zipStatus').textContent='';
+    }
+    setHref($('dlJs'), generateJs(), 'application/javascript', 'vtsearch.js');
+    var ph = patchedHtml();
+    var btn=$('dlHtml');
+    if(ph==null){ btn.classList.add('hide'); }
+    else { btn.classList.remove('hide'); setHref(btn, ph, 'text/html', state.indexHtmlName); }
+  }
+  function setHref(a, text, mime, name){
+    if(a._url) URL.revokeObjectURL(a._url);
+    a._url = URL.createObjectURL(new Blob([text],{type:mime}));
+    a.href=a._url; a.download=name;
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  // ---- one-click full re-export (whole tour + search, as a .zip) ----------
+  var CRC_TABLE=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;
+    for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+  function crc32(buf){var c=0xFFFFFFFF;for(var i=0;i<buf.length;i++)c=CRC_TABLE[(c^buf[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+  function u16(v){return [v&0xFF,(v>>>8)&0xFF];}
+  function u32(v){return [v&0xFF,(v>>>8)&0xFF,(v>>>16)&0xFF,(v>>>24)&0xFF];}
+  function readBytes(f){ return new Promise(function(res){ var r=new FileReader();
+    r.onload=function(){res(new Uint8Array(r.result));}; r.onerror=function(){res(new Uint8Array(0));};
+    r.readAsArrayBuffer(f); }); }
+
+  // minimal STORE-method (no compression) zip writer — dependency-free, offline
+  function buildZip(entries){
+    var enc=new TextEncoder(), chunks=[], central=[], offset=0;
+    entries.forEach(function(e){
+      var nb=enc.encode(e.name), crc=crc32(e.bytes), sz=e.bytes.length;
+      var lh=new Uint8Array([].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0),
+                                      u32(crc),u32(sz),u32(sz),u16(nb.length),u16(0)));
+      chunks.push(lh, nb, e.bytes);
+      var ch=new Uint8Array([].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0),
+                                      u32(crc),u32(sz),u32(sz),u16(nb.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset)));
+      central.push(ch, nb);
+      offset += lh.length + nb.length + sz;
+    });
+    var cdSize=central.reduce(function(a,b){return a+b.length;},0);
+    var eocd=new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(entries.length),u16(entries.length),
+                                      u32(cdSize),u32(offset),u16(0)));
+    return new Blob(chunks.concat(central,[eocd]),{type:'application/zip'});
+  }
+
+  function exportZip(){
+    if(!state.index || !state.files) return;
+    var btn=$('exportZip'), zs=$('zipStatus'), enc=new TextEncoder();
+    btn.disabled=true; var label=btn.textContent; btn.textContent='Packaging…';
+    var paths=Object.keys(state.files);
+    var indexRel=state.indexRel;
+    var dir=indexRel ? indexRel.slice(0, indexRel.lastIndexOf('/')+1) : '';
+    var jsRel=dir+'vtsearch.js';
+    var patched=patchedHtml();
+    var entries=[], i=0, n=paths.length;
+
+    (function step(){
+      if(i<n){
+        var p=paths[i++];
+        if(p===jsRel){ return step(); }                       // replaced below
+        if(indexRel && p===indexRel && patched!=null){ entries.push({name:p,bytes:enc.encode(patched)}); return step(); }
+        readBytes(state.files[p]).then(function(bytes){
+          entries.push({name:p,bytes:bytes});
+          if(i%8===0){ zs.className='note'; zs.textContent='Packaging '+i+' / '+n+' files…'; setTimeout(step,0); }
+          else step();
+        });
+      } else {
+        entries.push({name:jsRel, bytes:enc.encode(generateJs())});
+        zs.textContent='Building zip…';
+        setTimeout(function(){
+          try{
+            var blob=buildZip(entries);
+            var top=(indexRel||'tour').split('/')[0] || 'tour';
+            var fname=top.replace(/\.html?$/i,'')+'_with_search.zip';
+            var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname;
+            document.body.appendChild(a); a.click();
+            setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 3000);
+            zs.className='note ok';
+            zs.textContent='✓ '+fname+' — '+entries.length+' files, '+(blob.size/1048576).toFixed(1)+' MB. Unzip and upload the folder.';
+          }catch(e){ zs.className='note warn'; zs.textContent='Could not package: '+e.message; }
+          btn.disabled=false; btn.textContent=label;
+        },0);
+      }
+    })();
+  }
+  $('exportZip').addEventListener('click', exportZip);
+
+  // ---- start a fresh session (full reload = clean slate + frees memory) ----
+  function newSession(){
+    if(state.index){
+      if(!confirm('Start a new session and load a different tour?\n\nThis clears the current tour from the page. Anything you already downloaded stays on your computer.')) return;
+    }
+    state = {};                 // drop references so a heavy tour is freed immediately
+    location.reload();
+  }
+  ['newSession','newSession2'].forEach(function(id){ var b=$(id); if(b) b.addEventListener('click', newSession); });
+})();
+</script>
+</body>
+</html>

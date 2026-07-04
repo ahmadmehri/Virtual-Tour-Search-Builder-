@@ -1,0 +1,108 @@
+# VT Search Builder — Video Tutorial Script
+
+_This is the “directory” for the video: each section is a scene. **On screen** = what to show; **Narration** = the voiceover._
+
+
+## Scene 1 — Title / Intro
+
+**On screen:** Logo, big title "VT Search Builder", subtitle, four feature chips (offline, no-code, typo-tolerant, guided navigation), channel handle.
+
+**Narration:** Welcome! In this tutorial you'll meet VT Search Builder — a free, offline tool that adds a powerful search box, and even guided scene-by-scene navigation, to any 3DVista virtual tour. No coding, no uploads, no accounts. By the end you'll know exactly why it exists, how it works, and how to use it on your own tours in about three clicks. Let's dive in.
+
+
+## Scene 2 — The Problem
+
+**On screen:** Left: bullet list of the pain points. Right: a mock search box (the thing that's missing).
+
+**Narration:** Here's the problem. 3DVista is fantastic at building immersive virtual tours — but once you export one, there is no search. If a visitor wants the kitchen, the fire extinguisher, or photo number twelve, their only option is to click around and hope they stumble onto it. On a big tour with dozens of scenes and hundreds of hotspots, that gets frustrating fast. What people actually want is simple: a search box where they type a word and get taken straight there. That's the gap this tool fills.
+
+
+## Scene 3 — The Solution
+
+**On screen:** Top banner one-liner. Four cards: In your browser / Nothing uploaded / Online or offline / Any 3DVista tour.
+
+**Narration:** VT Search Builder solves it in one move: you drop in your exported tour folder, and it hands you back the exact same tour — with a search box already built in. Four things make it painless. One: it runs entirely in your browser, nothing to install. Two: nothing is uploaded; your tour never leaves your computer. Three: the result works the same whether the tour is online or offline, because it's plain JavaScript driving the tour's own player. And four: it works on any 3DVista website export — you run it once per tour.
+
+
+## Scene 4 — Workflow Overview
+
+**On screen:** Animated 3-step diagram: Load → Configure → Export, with arrows.
+
+**Narration:** The whole workflow is just three steps. Step one: load your tour by dropping in the exported folder. Step two: configure — choose what's searchable, rename items, add keywords, and tweak the look. Step three: export — one click gives you a ready-to-publish zip. You never edit a line of code: unzip, upload, done. Let's walk through each step.
+
+
+## Scene 5 — Step 1: Load
+
+**On screen:** Left: steps. Right: the drop-zone / “Choose tour folder” button screenshot.
+
+**Narration:** Step one — loading your tour. Open VT-Search-Builder dot HTML; it's a single file, so just double-click it. Then drag your exported tour folder onto the page, or click "Choose tour folder". That folder is the website export — the one with index.htm, script.js, the media folder and the locale folder. The moment you select it, the tool reads everything locally and shows what it found. Tip: drag-and-drop is smoothest in Firefox, but the button always works.
+
+
+## Scene 6 — Step 2: What Was Found
+
+**On screen:** Stat cards (Scenes/Hotspots/Photo/Albums/Total), then bullets about names, languages, thumbnails, scene graph.
+
+**Narration:** As soon as the tour loads, you get a summary of everything searchable — here, five scenes, thirty-three hotspots, a photo and some albums. It reads names straight from your locale files, so every language is supported. Scenes and media use their names; hotspots use their tooltips. It also grabs thumbnails and maps how your scenes connect — that graph powers the guided navigation we'll see shortly. And it shows a live preview as you configure.
+
+
+## Scene 7 — Step 2: Choose Searchable Types
+
+**On screen:** Type toggles (Scenes/Hotspots on, Photo/Albums off) + explanation panel.
+
+**Narration:** You're in control of what's searchable. Scenes and hotspots are on by default because the player opens them reliably. Photos, albums and videos are off by default — because a 3DVista export only lets an outside script switch the main media; pop-up photo and album slides are opened only by the author's own buttons, which a script can't trigger. Tick a type on if you've confirmed it opens in your tour. If a re-ticked item can't open, search shows a gentle "open it from the menu" note instead of failing silently.
+
+
+## Scene 8 — Step 2: Names & Keywords
+
+**On screen:** Two panels: Display name (01 → Kitchen counter) and Extra search words (Entrance → front door, lobby…). Reassurance bullets below.
+
+**Narration:** This is where the tool shines. Every item gets two optional boxes. First, a display name — turn a cryptic "zero-one" into "Kitchen counter". Second, extra search words — comma-separated terms a visitor might type; for "Entrance" you might add front door, lobby, foyer, start, and any of those will land them there. The original name always stays searchable, each item shows a thumbnail so you know what you're editing, and navigation always uses the real media so nothing breaks — all baked in as plain text, still fully offline.
+
+
+## Scene 9 — The Search Experience
+
+**On screen:** Left: feature bullets. Right: search box showing the “kitch” query with results.
+
+**Narration:** The search is built to be forgiving, because real visitors make typos. It's case-insensitive, ignores accents so "cafe" finds "café", and is genuinely typo-tolerant — "bedrom", "kitchn", "entrence" all hit. Multi-word works: "master bed" finds "Master Bedroom". Don't know what to type? Open the box empty to browse everything by type. Every result is labelled by type and shows where a hotspot lives. Typing just "kitch" surfaces the Kitchen scene and every hotspot inside it.
+
+
+## Scene 10 — Guided Navigation: Jump vs Guide me
+
+**On screen:** Two panels: “Jump” (instant) vs “Guide me” (walks there). Right panel: why it matters.
+
+**Narration:** Now the feature most search add-ons can't do. When a result is a scene, the visitor gets two choices. "Jump" teleports them straight there. But "Guide me" walks them there, scene by scene, turning toward each connecting doorway and stepping through, until they arrive — with a Stop button anytime. Why it matters: visitors keep their sense of place, seeing the route instead of a teleport. It's ideal for orientation, wayfinding and storytelling, powered entirely by your tour's own scene connections. Prefer plain jumps? Switch guiding off in Step 2.
+
+
+## Scene 11 — Guided Navigation Under the Hood
+
+**On screen:** Node diagram Pool → Master Bedroom → Great Room → Kitchen with “turn shortest way” note; bullets below.
+
+**Narration:** Here's how the guided walk works, with a real example: Pool to Kitchen. The tool builds a graph of which doorway connects to which scene, finds the shortest route — Pool, Master Bedroom, Great Room, Kitchen — and for each hop rotates the camera the shorter way, left or right, until the doorway is centred, then clicks it to step through. It repeats until arrival, and restores your tour's original camera settings when the walk ends, so nothing is permanently changed.
+
+
+## Scene 12 — Step 3: Export
+
+**On screen:** Two options: A) one-click .zip (recommended), B) just the two files for huge tours.
+
+**Narration:** Step three — getting your finished tour. Option A is the one-click zip: it rebuilds your tour with search baked in; unzip, upload, done, and your original folder is never touched — ideal for tours up to about a gigabyte. Option B, for very large tours, hands you just two small files — vtsearch.js and a patched index.htm — to drop into your existing folder yourself. Either way, nothing is uploaded; it all runs in your browser.
+
+
+## Scene 13 — Under the Hood & Privacy
+
+**On screen:** Two panels: “The parser” and “The widget”; a privacy banner across the bottom.
+
+**Narration:** Briefly, what does the work. The parser reads your tour data and locale files and extracts scenes, hotspots, thumbnails, and the scene-connection graph. The widget is a tiny script injected into your tour — it draws the search box, runs the forgiving match, and drives the tour's own player to navigate and to guide. And it bears repeating: it's a hundred percent offline and private — no AI or internet at search time. Your tour, and whatever visitors type, never leaves the browser.
+
+
+## Scene 14 — Compatibility & Limits
+
+**On screen:** Bulleted list of supported scenarios + the one limitation + the unofficial-tool note.
+
+**Narration:** A few things worth knowing. It works on tours exported with 3DVista's "export to website" option — the static folder, not the project file. It runs in all modern browsers and handles dual-skin tours, so search appears on both desktop and mobile. Multiple languages are supported. The one real limitation: pop-up photos and albums can't be opened by an outside script, so they're off by default. And it's an independent, unofficial tool — not affiliated with 3DVista; it just works on their exported output.
+
+
+## Scene 15 — Recap & Call to Action
+
+**On screen:** Recap bullets + RockBench logo, channel handle, subscribe prompt.
+
+**Narration:** Let's recap. With VT Search Builder you drop in your tour, configure it, and export — no code at any point. You get forgiving search that handles typos, accents and multiple languages, plus browse-all. You can rename items and add keywords so everything is findable. Scene results can guide visitors there, the shortest way. And it's a single, self-contained file that runs a hundred percent offline. If this helped, the tool is free — find it, plus more 3DVista and geo-engineering tutorials, on the RockBench channel. Thanks for watching — now go make your tours searchable!

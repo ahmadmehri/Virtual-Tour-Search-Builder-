@@ -1,0 +1,26 @@
+{
+  "name": "vt-search-builder",
+  "version": "1.0.0",
+  "description": "Add a self-contained, offline search box (with guided navigation) to any 3DVista virtual tour — no code, no upload.",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "keywords": [
+    "3dvista",
+    "virtual-tour",
+    "panorama",
+    "search",
+    "guided-navigation",
+    "offline",
+    "static-site"
+  ],
+  "author": "RockBench (https://youtube.com/@rockbench)",
+  "license": "MIT",
+  "type": "commonjs",
+  "files": [
+    "VT-Search-Builder.html",
+    "build.js",
+    "src/",
+    "rockbench_Logo.jpg"
+  ]
+}

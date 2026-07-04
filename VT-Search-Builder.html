@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>VT Search Builder — add a search box to any 3DVista tour</title>
+<style>
+  :root{ --bg:#0e1014; --panel:#171a20; --panel2:#1e222a; --fg:#f6f8fb; --muted:#c2cad4;
+         --accent:#2da3ff; --line:rgba(255,255,255,.12); --ok:#3ee594; --warn:#ffb05c; }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
+  a{color:var(--accent);}
+  .wrap{max-width:920px;margin:0 auto;padding:28px 20px 80px;}
+  header h1{margin:0 0 4px;font-size:24px;letter-spacing:.2px;}
+  header p{margin:0;color:var(--muted);font-size:14px;}
+  .head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+  .head-row #newSession{flex:0 0 auto;white-space:nowrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .rb-logo{background:url('data:image/jpeg;base64,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') center/cover no-repeat;border-radius:10px;flex:0 0 auto;border:1px solid var(--line);}
+  .brand .rb-logo{width:46px;height:46px;}
+  .by-line{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .by-line a{color:var(--accent);text-decoration:none;font-weight:600;}
+  .by-line a:hover{text-decoration:underline;}
+  .yt-btn{display:inline-flex;align-items:center;gap:8px;background:#ff0000;color:#fff;border:0;border-radius:9px;
+          padding:9px 16px;font-size:14px;font-weight:700;text-decoration:none;white-space:nowrap;}
+  .yt-btn:hover{background:#d90000;}
+  .yt-btn svg{width:20px;height:20px;fill:#fff;}
+  .promo{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:26px;background:var(--panel);
+         border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
+  .promo .rb-logo{width:60px;height:60px;}
+  .promo-txt{flex:1;min-width:180px;}
+  .promo-txt h4{margin:0 0 3px;font-size:15px;}
+  .promo-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+         font-size:11px;padding:2px 9px;border-radius:20px;margin-left:8px;vertical-align:middle;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px;}
+  .step{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:10px;font-weight:600;}
+  #drop{border:2px dashed rgba(255,255,255,.18);border-radius:14px;padding:34px 18px;text-align:center;
+        transition:.18s;cursor:pointer;background:var(--panel2);}
+  #drop.hover{border-color:var(--accent);background:rgba(45,163,255,.08);}
+  #drop .big{font-size:16px;margin-bottom:6px;}
+  #drop .small{color:var(--muted);font-size:13px;}
+  input[type=file]{display:none;}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#06121f;border:0;border-radius:10px;
+       padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;}
+  .btn.secondary{background:var(--panel2);color:var(--fg);border:1px solid var(--line);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .disabled-link{opacity:.45;pointer-events:none;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
+  .stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .stat b{font-size:22px;display:block;}
+  .stat span{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.4px;}
+  label.field{display:block;font-size:13px;color:var(--muted);margin:0 0 4px;}
+  select,input[type=text],input[type=color]{background:var(--panel2);color:var(--fg);border:1px solid var(--line);
+       border-radius:8px;padding:8px 10px;font-size:14px;width:100%;}
+  input[type=color]{height:38px;padding:3px;}
+  .opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media(max-width:640px){.opts{grid-template-columns:1fr;}}
+  .preview{margin-top:14px;}
+  .pv-input{position:relative;}
+  .pv-list{margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden;max-height:320px;overflow-y:auto;}
+  .pv-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05);}
+  .pv-row:last-child{border-bottom:0;}
+  .pv-thumb{flex:0 0 50px;width:50px;height:36px;border-radius:6px;background:#2a2e35 center/cover no-repeat;}
+  .pv-name{font-size:14px;}
+  .pv-sub{font-size:12px;color:var(--muted);}
+  .tag{font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:9px;color:#0c0e11;margin-left:auto;}
+  pre{background:#0a0c0f;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;font-size:13px;}
+  .hide{display:none;}
+  .note{color:var(--muted);font-size:13px;}
+  ol{padding-left:20px;} ol li{margin:6px 0;}
+  .ok{color:var(--ok);} .warn{color:var(--warn);}
+  code{background:#0a0c0f;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:13px;}
+  .callout{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;font-size:13px;background:var(--panel2);}
+  .callout b{color:var(--fg);}
+  .callout.rec-zip{border-color:rgba(38,222,129,.45);background:rgba(38,222,129,.07);}
+  .callout.rec-two{border-color:rgba(255,159,67,.5);background:rgba(255,159,67,.08);}
+  .optblock{border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:8px;}
+  .optblock h4{margin:0 0 6px;font-size:15px;}
+  ul.trade{list-style:none;padding:0;margin:10px 0 0;font-size:13px;}
+  ul.trade li{padding:3px 0 3px 24px;position:relative;color:var(--muted);}
+  ul.trade li.good:before{content:'✓';position:absolute;left:2px;color:var(--ok);font-weight:700;}
+  ul.trade li.bad:before{content:'!';position:absolute;left:6px;color:var(--warn);font-weight:700;}
+  .warn-box{background:rgba(255,159,67,.09);border:1px solid rgba(255,159,67,.5);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:13px;}
+  .warn-box ol{margin:8px 0 0;}
+  @keyframes vtpulse{0%{box-shadow:0 0 0 0 rgba(45,163,255,.55);}70%{box-shadow:0 0 0 12px rgba(45,163,255,0);}100%{box-shadow:0 0 0 0 rgba(45,163,255,0);}}
+  .btn.pulse{animation:vtpulse 1.2s ease-out 2;}
+  .toggles{display:flex;flex-wrap:wrap;gap:10px;}
+  .toggle{display:inline-flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;user-select:none;font-size:13px;}
+  .toggle input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;margin:0;}
+  .toggle .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
+  .toggle .cnt{color:var(--muted);}
+  .toggle.off{opacity:.5;}
+  .rename-list{max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:10px;}
+  .rn-group{padding:7px 11px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);background:rgba(255,255,255,.04);position:sticky;top:0;}
+  .rn-row{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border-bottom:1px solid rgba(255,255,255,.05);}
+  .rn-row:last-child{border-bottom:0;}
+  .rn-thumb{flex:0 0 46px;width:46px;height:34px;border-radius:6px;background:#2a2e35 center/cover no-repeat;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .rn-thumb .dot{width:9px;height:9px;border-radius:50%;}
+  .rn-main{flex:1;min-width:0;}
+  .rn-orig{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
+  .rn-orig b{color:var(--fg);font-weight:600;}
+  .rn-fields{display:flex;gap:8px;flex-wrap:wrap;}
+  .rn-fields .fwrap{flex:1;min-width:140px;}
+  .rn-fields .flabel{font-size:10.5px;color:var(--muted);margin:0 0 2px 2px;}
+  .rn-row input{width:100%;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:13px;}
+  .rn-row input:focus{outline:none;border-color:var(--accent);}
+  .rn-row input.changed{border-color:var(--accent);background:rgba(45,163,255,.08);}
+  .rn-auto{font-size:10.5px;color:var(--muted);margin-left:6px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;white-space:nowrap;}
+  .rn-auto-warn{color:var(--warn);border-color:var(--warn);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="head-row">
+      <div class="brand">
+        <a class="rb-logo" href="https://www.youtube.com/@rockbench" target="_blank" rel="noopener" title="RockBench on YouTube"></a>
+        <div>
+          <h1>VT Search Builder <span class="badge">3DVista · offline-ready</span></h1>
+          <p>Drop an exported 3DVista tour folder. Get back a self-contained search box that runs inside the tour — online or offline.</p>
+          <div class="by-line">by <a href="https://www.youtube.com/@rockbench" target="_blank" rel="noopener">RockBench</a> · 3DVista &amp; geology tutorials on YouTube</div>
+        </div>
+      </div>
+      <button id="newSession" class="btn secondary hide" title="Clear everything and load a different tour">↺ New session</button>
+    </div>
+  </header>
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <div class="step">Step 1 · Load your exported tour</div>
+    <div id="localTip" class="callout rec-two hide">
+      <b>Drag-and-drop didn’t work here.</b> Some browsers (notably <b>Chrome</b>) block dragging a <i>folder</i> onto a page opened as a local file.
+      Please use the <b>“📁 Choose tour folder…”</b> button below — it always works. (Folder drag-and-drop <i>does</i> work in <b>Firefox</b>, or when this tool is opened from a web address.)
+    </div>
+    <div id="drop">
+      <div class="big">📁 Choose your exported tour folder</div>
+      <div class="small">Click the button below — or drag the folder here (works on hosted pages).</div>
+    </div>
+    <div class="row" style="margin-top:12px;align-items:center;">
+      <button id="pickBtn" class="btn">📁 Choose tour folder…</button>
+      <span class="note">Most reliable option — works in every browser.</span>
+    </div>
+    <input id="picker" type="file" webkitdirectory directory multiple/>
+    <p id="status" class="note" style="margin-top:12px;"></p>
+    <p class="note" style="margin-top:6px;">Nothing is uploaded — everything runs locally in your browser.</p>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step2" class="card hide">
+    <div class="step">Step 2 · What was found</div>
+    <div id="stats" class="grid"></div>
+
+    <div style="margin-top:18px;">
+      <div class="step">Searchable items · tick what visitors can find</div>
+      <div id="typeToggles" class="toggles"></div>
+      <p class="note" style="margin-top:10px;"><b>Scenes</b> and <b>hotspots</b> open reliably, so they're on by default.
+        <b>Photos, albums and videos are off</b> because 3DVista's player usually can't open them from a script — in most tours
+        they're shown <i>through</i> a hotspot pop-up or the menu, with no way for an outside script to open them on their own
+        (so they'd appear in search but do nothing).
+        <br><b>If you still want one in the search:</b> tick it here — and in 3DVista give the <b>hotspot</b> that opens it a clear
+        tooltip (e.g. “Open photo album”). Searching that wording then finds the hotspot and opens the pop-up — the tour's own way of
+        showing it. (Tick a type only if it actually opens when you test the finished tour.)</p>
+    </div>
+
+    <details open style="margin-top:18px;">
+      <summary class="step" style="cursor:pointer;">✎ Names &amp; search keywords <span class="note">— optional, but very useful</span></summary>
+      <div class="callout" style="margin-top:8px;">
+        Each element has two optional boxes. <b>You never lose the original name — it stays searchable either way.</b>
+        <ul style="margin:8px 0 0;padding-left:20px;">
+          <li><b>Display name</b> — a friendlier label to <i>show and search</i> instead of a vague one. <span class="note">e.g. rename “<b>01</b>” → “<b>Kitchen counter</b>”, or “<b>Image</b>” → “<b>Floor plan</b>”.</span></li>
+          <li><b>Extra search words</b> — other words a visitor might type to find this item, separated by commas. The element still opens; these just help people <i>find</i> it. <span class="note">e.g. for a scene named “<b>Entrance</b>”, add: <b>front door, main door, lobby, foyer, start</b> → now searching any of those lands on Entrance.</span></li>
+        </ul>
+        <div class="note" style="margin-top:8px;">💡 Tip: think of how a first-time visitor might describe the place in their own words, and add those. Works offline — the words are saved right inside your tour.</div>
+      </div>
+      <div id="renameList" class="rename-list"></div>
+    </details>
+
+    <div style="margin-top:18px;">
+      <div class="step">Appearance</div>
+      <div class="opts">
+        <div>
+          <label class="field">Search icon position</label>
+          <select id="optPos">
+            <option value="top-right">Top right</option>
+            <option value="top-center">Top center</option>
+            <option value="top-left">Top left</option>
+            <option value="bottom-right">Bottom right</option>
+            <option value="bottom-center">Bottom center</option>
+            <option value="bottom-left">Bottom left</option>
+          </select>
+        </div>
+        <div>
+          <label class="field">Accent colour</label>
+          <input id="optAccent" type="color" value="#2da3ff"/>
+        </div>
+        <div>
+          <label class="field">Placeholder text</label>
+          <input id="optPlaceholder" type="text" value="Search the tour…"/>
+        </div>
+      </div>
+      <label class="toggle" style="margin-top:14px;">
+        <input id="optBrowseAll" type="checkbox" checked/>
+        <span>Let visitors <b>browse all items</b> — show the full list (grouped by type) when the search box is empty.</span>
+      </label>
+      <label class="toggle" style="margin-top:10px;">
+        <input id="optGuided" type="checkbox" checked/>
+        <span>Enable <b>guided navigation</b> — when a scene result has a path, visitors get a “Guide me” option that walks them there scene-by-scene.</span>
+      </label>
+    </div>
+
+    <div class="preview">
+      <div class="step" style="margin-top:18px;">Live preview <span id="pvHint" class="note"></span></div>
+      <div class="pv-input"><input id="pvQuery" type="text" placeholder="Type to search — or leave empty to browse all…"/></div>
+      <div id="pvList" class="pv-list"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div id="step3" class="card hide">
+    <div class="step">Step 3 · Get your search-enabled tour</div>
+
+    <!-- live recommendation based on the tour's size -->
+    <div id="sizeNote" class="callout"></div>
+
+    <!-- OPTION A — full zip -->
+    <div class="optblock">
+      <h4>Option A · Export the whole tour as a ready-to-publish .zip <span class="badge">simplest</span></h4>
+      <button id="exportZip" class="btn" style="font-size:15px;padding:12px 20px;margin-top:6px;">⬇ Export published tour (.zip)</button>
+      <p id="zipStatus" class="note" style="margin:10px 0 0;"></p>
+      <ul class="trade">
+        <li class="good"><b>Easiest:</b> unzip it, upload that folder, done — no editing at all.</li>
+        <li class="good"><b>Safe:</b> your original tour folder is never touched — this only creates a new zip.</li>
+        <li class="bad"><b>Heavy on memory:</b> it rebuilds the entire tour (all media) in your browser. A very large tour (several GB) may be slow, or fail on a low-RAM computer.</li>
+      </ul>
+      <p class="note" style="margin-top:8px;">👉 <b>Choose this for normal-sized tours</b> (up to roughly 1&nbsp;GB).</p>
+    </div>
+
+    <!-- OPTION B — two files -->
+    <details class="optblock" style="margin-top:14px;">
+      <summary style="cursor:pointer;font-size:15px;font-weight:600;">Option B · Get just the two small files <span class="badge">best for very large tours</span></summary>
+      <div class="row" style="margin-top:12px;">
+        <a id="dlJs" class="btn secondary">⬇ vtsearch.js</a>
+        <a id="dlHtml" class="btn secondary">⬇ patched index.htm</a>
+      </div>
+      <ul class="trade">
+        <li class="good"><b>Tiny &amp; safe on size:</b> it never reads your media — no size limit, no memory worries, however heavy the tour is.</li>
+        <li class="bad"><b>You install them yourself</b> (two short steps below).</li>
+      </ul>
+      <div class="warn-box">
+        <b>⚠ Installing it yourself — protect your original files:</b>
+        <ol>
+          <li><b>Copy <code>vtsearch.js</code></b> into your tour folder, right next to <code>index.htm</code>. This is a brand-new file, so it won't overwrite anything.</li>
+          <li>The downloaded <b><code>index.htm</code> will REPLACE the one in your tour folder.</b> Before you overwrite it, <b>make a backup copy of your original <code>index.htm</code></b> (e.g. rename it <code>index-original.htm</code>) so you can always go back.</li>
+          <li><b>Prefer not to replace it?</b> Keep your own <code>index.htm</code> and just add this single line right before <code>&lt;/body&gt;</code>:
+            <pre style="margin:6px 0 0;">&lt;script src="vtsearch.js?v=1"&gt;&lt;/script&gt;</pre></li>
+        </ol>
+      </div>
+      <p class="note" style="margin-top:10px;">👉 <b>Choose this if the tour is very large</b>, or if Option A is slow or fails.</p>
+    </details>
+
+    <p class="note" style="margin-top:14px;">Either option: <b>nothing is uploaded anywhere</b> — it all runs in your browser, and the finished search works the same online or offline. Re-running this tool later just makes a newer <code>vtsearch.js</code>; safe to overwrite the old one.</p>
+
+    <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:16px;">
+      <button id="newSession2" class="btn secondary">↺ Start a new session (load another tour)</button>
+      <p class="note" style="margin-top:8px;">Finished with this tour? Clear everything and start over with a different one. Anything you already downloaded stays safely on your computer.</p>
+    </div>
+  </div>
+
+  <!-- promo / credit -->
+  <footer class="promo">
+    <a class="rb-logo" href="https://www.youtube.com/@rockbench" target="_blank" rel="noopener" title="RockBench on YouTube"></a>
+    <div class="promo-txt">
+      <h4>Made with VT Search Builder — by RockBench</h4>
+      <div class="note">Find this useful? Subscribe for more 3DVista virtual-tour and rock-engineering / geology tutorials.</div>
+    </div>
+    <div class="promo-actions">
+      <a class="yt-btn" href="https://www.youtube.com/channel/UC6OwZWavuKkB1e7GN-9UA1g?sub_confirmation=1" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+        Subscribe
+      </a>
+      <a href="https://www.youtube.com/@rockbench" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;font-weight:600;">Visit channel ↗</a>
+    </div>
+  </footer>
+</div>
+
+<!-- ===== Tour parser (runs here in the builder) ===== -->
+<script>
+/* ============================================================================
+   VT Search Builder — Tour Parser  (shared by the builder UI and node tests)
+   ----------------------------------------------------------------------------
+   Pure, DOM-free. Works in the browser and under node.
+   Input : { scriptGeneral, scriptMain, locales }
+       scriptGeneral : text of script_general.js (the tour data model)
+       scriptMain    : text of script.js          (optional, fallback)
+       locales       : { en: "<contents of locale/en.txt>", ... }  (>=1 locale)
+   Output: see parseTour() return shape below.
+   ========================================================================== */
+(function (root) {
+  'use strict';
+
+  // ---- locale parsing ------------------------------------------------------
+  // Lines look like:  panorama_XXX.label = Entrance
+  //                   HotspotPanoramaOverlayArea_YYY.toolTip = View Painting
+  function parseLocale(text) {
+    var map = {}; // id -> { label, toolTip, subtitle }
+    if (!text) return map;
+    var lines = text.split(/\r?\n/);
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (!line || line.charAt(0) === '#') continue;
+      var eq = line.indexOf('=');
+      if (eq < 0) continue;
+      var key = line.slice(0, eq).trim();
+      var val = line.slice(eq + 1).trim();
+      if (!key || !val) continue;
+      var dot = key.lastIndexOf('.');
+      if (dot < 0) continue;
+      var id = key.slice(0, dot);
+      var prop = key.slice(dot + 1);
+      if (prop !== 'label' && prop !== 'toolTip' && prop !== 'subtitle') continue;
+      (map[id] || (map[id] = {}))[prop] = decodeLocale(val);
+    }
+    return map;
+  }
+
+  function decodeLocale(s) {
+    // locale values may carry escaped unicode / quotes; keep it simple + safe
+    return s.replace(/\\n/g, ' ').replace(/\\"/g, '"').replace(/\\\\/g, '\\').trim();
+  }
+
+  // JS/JSON string bodies (e.g. inside a "data":{"label":"..."} block) use real
+  // JSON escaping, unlike the ad hoc locale .txt values decodeLocale() handles.
+  function unescapeJsonString(s) {
+    try { return JSON.parse('"' + s + '"'); }
+    catch (e) { return s.replace(/\\"/g, '"').replace(/\\\\/g, '\\'); }
+  }
+
+  // ---- string-aware structural scan of the data file ----------------------
+  // Walk every {...} object once. For each closed object, hand its source slice
+  // to the collectors. This avoids fragile backtracking and nested-brace traps,
+  // because object string literals are skipped while scanning.
+  function scanObjects(text, onObject) {
+    var stack = [];
+    var inStr = false, esc = false;
+    for (var i = 0, n = text.length; i < n; i++) {
+      var ch = text.charCodeAt(i);
+      if (inStr) {
+        if (esc) { esc = false; }
+        else if (ch === 92) { esc = true; }          // backslash
+        else if (ch === 34) { inStr = false; }        // closing quote
+        continue;
+      }
+      if (ch === 34) { inStr = true; }                // opening quote
+      else if (ch === 123) { stack.push(i); }         // {
+      else if (ch === 125) {                          // }
+        var start = stack.pop();
+        if (start !== undefined) onObject(text, start, i + 1);
+      }
+    }
+  }
+
+  // Same string-aware brace-walk as scanObjects, but returns one balanced {...}
+  // slice starting at a known '{' index. Used to safely bound a "data":{...}
+  // block even if an author-typed label ever contains a literal '}'.
+  function sliceBalanced(text, openIdx) {
+    var depth = 0, inStr = false, esc = false;
+    for (var i = openIdx, n = text.length; i < n; i++) {
+      var ch = text.charCodeAt(i);
+      if (inStr) {
+        if (esc) { esc = false; }
+        else if (ch === 92) { esc = true; }
+        else if (ch === 34) { inStr = false; }
+        continue;
+      }
+      if (ch === 34) { inStr = true; }
+      else if (ch === 123) { depth++; }
+      else if (ch === 125) { depth--; if (depth === 0) return text.slice(openIdx, i + 1); }
+    }
+    return null;
+  }
+
+  function firstId(obj, prefix) {
+    var re = new RegExp('"id":"(' + prefix + '_[0-9A-Fa-f_]+)"');
+    var m = re.exec(obj);
+    return m ? m[1] : null;
+  }
+  function grabThumb(obj) {
+    var m = /"thumbnailUrl":"(media\/[^"]+)"/.exec(obj);
+    return m ? m[1] : null;
+  }
+  // 3DVista gives every editor component an internal name, independent of any
+  // public locale text: most media/hotspot classes use "data":{"label":"..."},
+  // some UI components use "data":{"name":"..."} instead — check both. Takes the
+  // FIRST "data":{...} in the slice, which is always the object's own (nested
+  // children's "data" blocks, if any, serialize later in the same slice).
+  function grabDataLabel(obj) {
+    var di = obj.indexOf('"data":{');
+    if (di < 0) return null;
+    var seg = sliceBalanced(obj, di + 7); // +7 = index of the '{' itself
+    if (!seg) return null;
+    var m = /"label":"((?:\\.|[^"\\])*)"/.exec(seg) || /"name":"((?:\\.|[^"\\])*)"/.exec(seg);
+    return m ? unescapeJsonString(m[1]) : null;
+  }
+  // refs inside arrays look like  "this.overlay_XXX"  /  "this.HotspotPanoramaOverlayArea_YYY"
+  function refsOfArray(obj, arrayKey, idPrefix) {
+    var m = new RegExp('"' + arrayKey + '":\\[([^\\]]*)\\]').exec(obj);
+    if (!m) return [];
+    var out = [], re = new RegExp('this\\.(' + idPrefix + '_[0-9A-Fa-f_]+)', 'g'), r;
+    while ((r = re.exec(m[1]))) out.push(r[1]);
+    return out;
+  }
+
+  // ---- main ----------------------------------------------------------------
+  function parseTour(input) {
+    // A dual-skin (desktop + mobile) export can split its data across several
+    // device script files. Scan EVERY script we were given, not just one.
+    var sources = [];
+    if (input.scripts && input.scripts.length) sources = sources.concat(input.scripts);
+    if (input.scriptGeneral) sources.push(input.scriptGeneral);
+    if (input.scriptMain) sources.push(input.scriptMain);
+    var seenSrc = {}, uniq = [];
+    sources.forEach(function (s) { if (s && !seenSrc[s]) { seenSrc[s] = 1; uniq.push(s); } });
+    // Scan only files that actually hold tour DATA. The minified bootstrap
+    // (script.js) is player CODE — its single-quoted strings contain stray
+    // double-quotes that would desync the object scanner. Skip it.
+    function hasData(s) {
+      return /"class":"(Panorama|Photo|Video|Album|HotspotPanoramaOverlay)"/.test(s) ||
+             /"id":"(panorama|photo|video|album)_/.test(s);
+    }
+    var dataSources = uniq.filter(hasData);
+    if (!dataSources.length) dataSources = uniq;        // fallback: scan whatever we have
+    var data = dataSources.join('\n');
+    var locales = input.locales || {};
+    var localeNames = Object.keys(locales);
+    var primary = locales.en ? 'en' : (localeNames[0] || null);
+    var loc = parseLocale(primary ? locales[primary] : '');
+
+    // structural pass: collect overlay->areas and panorama->overlays + thumbs
+    var overlayAreas = {};      // overlayId -> [areaId,...]
+    var panoOverlays = {};      // panoId    -> [overlayId,...]
+    var thumbById = {};         // mediaId   -> thumbnailUrl
+    var adjAll = [];            // every AdjacentPanorama link {start,to,yaw}
+    var panoRanges = [];        // every Panorama object {id,start,end} (for graph build)
+    var overlayDataLabel = {};  // overlayId -> 3DVista editor's own pin name (fallback hotspot name)
+    var structLabelById = {};   // mediaId   -> 3DVista editor's own name (fallback scene/photo/video/album name)
+    var mediaSeen = {};         // mediaId   -> 1, for every panorama/photo/video/album id found structurally
+
+    scanObjects(data, function (text, start, end) {
+      var obj = text.slice(start, end);
+      // cheap reject: every object we care about names its class
+      var ci = obj.indexOf('"class":"');
+      if (ci < 0) return;
+
+      if (obj.indexOf('"class":"HotspotPanoramaOverlay"') >= 0 && obj.indexOf('"areas":') >= 0) {
+        var ovId = firstId(obj, 'overlay');
+        if (ovId) {
+          var areas = refsOfArray(obj, 'areas', 'HotspotPanoramaOverlayArea');
+          if (areas.length) overlayAreas[ovId] = areas;
+          if (!overlayDataLabel[ovId]) {
+            var ovLbl = grabDataLabel(obj);
+            if (ovLbl) overlayDataLabel[ovId] = ovLbl;
+          }
+        }
+      }
+      // scene-graph: each AdjacentPanorama carries a yaw + target panorama +
+      // the doorway overlay (overlayID) used to "walk through" to the next scene.
+      // scanObjects() fires for EVERY enclosing {...}, so the parent Panorama (and any
+      // device/skin wrapper) also "contains" this class text — exclude those by requiring
+      // the slice to NOT itself be/contain a Panorama, so we capture only the innermost
+      // AdjacentPanorama objects (otherwise links get duplicated + mis-attributed).
+      if (obj.indexOf('"class":"AdjacentPanorama"') >= 0 && obj.indexOf('"class":"Panorama"') < 0) {
+        var ym = /"yaw":(-?[0-9.]+)/.exec(obj);
+        var pm = /"pitch":(-?[0-9.]+)/.exec(obj);
+        var tm = /"panorama":"this\.(panorama_[0-9A-Fa-f_]+)"/.exec(obj);
+        var om = /"overlayID":"(overlay_[0-9A-Fa-f_]+)"/.exec(obj);
+        if (tm) adjAll.push({ start: start, to: tm[1], yaw: ym ? parseFloat(ym[1]) : null, pitch: pm ? parseFloat(pm[1]) : null, overlayID: om ? om[1] : null });
+      }
+      // Only the innermost Panorama object (exactly ONE Panorama class in the slice).
+      // A device/skin wrapper enclosing several panoramas also matches this text; taking
+      // it would register a huge byte-range under the first panorama's id, overwriting the
+      // real node's neighbors and swallowing other scenes' adjacencies.
+      if (obj.indexOf('"class":"Panorama"') >= 0 && (obj.match(/"class":"Panorama"/g) || []).length === 1) {
+        var pId = firstId(obj, 'panorama');
+        if (pId) {
+          panoRanges.push({ id: pId, start: start, end: end });
+          if (obj.indexOf('"overlays":') >= 0) {
+            var ovs = refsOfArray(obj, 'overlays', 'overlay');
+            if (ovs.length) panoOverlays[pId] = ovs;
+          }
+          var t = grabThumb(obj);
+          if (t && !thumbById[pId]) thumbById[pId] = t;
+          mediaSeen[pId] = 1;
+          if (!structLabelById[pId]) {
+            var pLbl = grabDataLabel(obj);
+            if (pLbl) structLabelById[pId] = pLbl;
+          }
+        }
+      }
+      // thumbnails + structural names for photos / videos / albums / panoramas
+      // (object whose own id carries these) — recorded regardless of whether
+      // locale text exists for it, so it can still become a searchable item.
+      var idm = /"id":"((?:photo|video|album|panorama)_[0-9A-Fa-f_]+)"/.exec(obj);
+      if (idm) {
+        mediaSeen[idm[1]] = 1;
+        var th = grabThumb(obj);
+        if (th && !thumbById[idm[1]]) thumbById[idm[1]] = th;
+        if (!structLabelById[idm[1]]) {
+          var dLbl = grabDataLabel(obj);
+          if (dLbl) structLabelById[idm[1]] = dLbl;
+        }
+      }
+    });
+
+    // Build the scene graph: panoId -> { label, neighbors:[{to,yaw}] }.
+    // An AdjacentPanorama belongs to the Panorama whose byte-range encloses it;
+    // pick the SMALLEST enclosing range (panoramas never nest, but be safe).
+    var graph = {};
+    panoRanges.forEach(function (pr) { graph[pr.id] = { label: null, neighbors: [] }; });
+    adjAll.forEach(function (a) {
+      var best = null;
+      panoRanges.forEach(function (pr) {
+        if (a.start > pr.start && a.start < pr.end) {
+          if (!best || (pr.end - pr.start) < (best.end - best.start)) best = pr;
+        }
+      });
+      // A dual-skin export ships the SAME tour data twice (script_general.js +
+      // script_mobile.js), so each doorway is seen once per skin. Keep one edge per
+      // target so the scene graph isn't doubled.
+      if (best && a.to) {
+        var nbs = graph[best.id].neighbors;
+        if (!nbs.some(function (n) { return n.to === a.to; }))
+          nbs.push({ to: a.to, yaw: a.yaw, pitch: a.pitch, overlayID: a.overlayID });
+      }
+    });
+
+    // ---- build searchable items from every element found, locale or not ----
+    // Priority for the display/search name: a public locale label/tooltip first
+    // (human-authored, and the only thing navigation can reliably use), then the
+    // 3DVista editor's own internal name (always present, but not author-facing),
+    // then a generic placeholder as a last-resort safety net. Whichever name(s)
+    // weren't chosen are kept in altNames so they stay searchable too.
+    var items = [];
+    var TYPE = { panorama: 'scene', photo: 'photo', video: 'video', album: 'album' };
+    var TYPE_DISPLAY = { scene: 'Scene', hotspot: 'Hotspot', photo: 'Photo', video: 'Video', album: 'Album' };
+    var placeholderCounters = {};
+    function nextPlaceholder(type) {
+      placeholderCounters[type] = (placeholderCounters[type] || 0) + 1;
+      return (TYPE_DISPLAY[type] || type) + ' ' + placeholderCounters[type];
+    }
+    function altNamesOf(chosen, candidates) {
+      var out = [];
+      candidates.forEach(function (n) { if (n && n !== chosen && out.indexOf(n) < 0) out.push(n); });
+      return out.length ? out : undefined;
+    }
+
+    var mediaIds = {};
+    Object.keys(loc).forEach(function (id) { mediaIds[id] = 1; });
+    Object.keys(mediaSeen).forEach(function (id) { mediaIds[id] = 1; });
+    panoRanges.forEach(function (pr) { mediaIds[pr.id] = 1; });
+
+    Object.keys(mediaIds).forEach(function (id) {
+      var pfx = id.split('_')[0].toLowerCase();
+      var type = TYPE[pfx];
+      if (!type) return;
+      var entry = loc[id] || {};
+      var localeLabel = entry.label || null;
+      var structLabel = structLabelById[id] || null;
+      var chosen, nameSource;
+      if (localeLabel) { chosen = localeLabel; nameSource = 'locale'; }
+      else if (structLabel) { chosen = structLabel; nameSource = 'structural'; }
+      else { chosen = nextPlaceholder(type); nameSource = 'generated'; }
+      items.push({
+        type: type,
+        id: id,
+        label: localeLabel || chosen,  // navigation target — real locale label if one exists;
+                                        // only a fallback name when none exists at all (may not
+                                        // be navigable — the widget already degrades gracefully)
+        name: chosen,                  // display/search name (the builder may rename this)
+        nameSource: nameSource,        // 'locale' | 'structural' | 'generated' — Step 2 UI only
+        altNames: altNamesOf(chosen, [localeLabel, structLabel]),
+        subtitle: entry.subtitle || null,
+        thumb: thumbById[id] || null
+      });
+      if (type === 'scene' && graph[id] && localeLabel) graph[id].label = localeLabel;
+    });
+
+    // ---- hotspots ---------------------------------------------------------
+    Object.keys(panoOverlays).forEach(function (panoId) {
+      var panoEntry = loc[panoId];
+      var panoLabel = panoEntry && panoEntry.label ? panoEntry.label : null;
+      panoOverlays[panoId].forEach(function (ovId) {
+        var areas = overlayAreas[ovId];
+        if (!areas) return;
+        var overlayLabel = overlayDataLabel[ovId] || null;
+        areas.forEach(function (areaId) {
+          var le = loc[areaId];
+          var tip = le && le.toolTip ? le.toolTip : null;
+          var chosen, nameSource;
+          if (tip) { chosen = tip; nameSource = 'locale'; }
+          else if (overlayLabel) { chosen = overlayLabel; nameSource = 'structural'; }
+          else { chosen = nextPlaceholder('hotspot'); nameSource = 'generated'; }
+          items.push({
+            type: 'hotspot',
+            id: areaId,
+            label: chosen,             // presentational — hotspot navigation never reads item.label
+            name: chosen,              // display/search name (renamable)
+            nameSource: nameSource,    // 'locale' | 'structural' | 'generated' — Step 2 UI only
+            altNames: altNamesOf(chosen, [tip, overlayLabel]),
+            panoId: panoId,
+            panoLabel: panoLabel,      // structural — drives hotspot scene-jump, unchanged
+            overlayId: ovId,
+            thumb: thumbById[panoId] || null
+          });
+        });
+      });
+    });
+
+    // tour title: <title> isn't in these files, but the video/scene "Casa
+    // Cascada" or index <title> is. Caller can override. Provide a best guess.
+    var title = null;
+    var tm = /"id":"video_[0-9A-Fa-f_]+"[\s\S]{0,400}?Casa[^"]*/.exec(data);
+
+    // de-dup (same id can be reached twice) and stable sort by type then name
+    var seen = {};
+    items = items.filter(function (it) {
+      var k = it.type + '|' + it.id + '|' + (it.panoId || '');
+      if (seen[k]) return false; seen[k] = 1; return true;
+    });
+    var order = { scene: 0, hotspot: 1, photo: 2, video: 3, album: 4 };
+    var rank = function (t) { return t in order ? order[t] : 9; };  // note: 0 is valid, don't use ||
+    items.sort(function (a, b) {
+      var d = rank(a.type) - rank(b.type);
+      return d || a.name.localeCompare(b.name);
+    });
+
+    return {
+      title: title,
+      locale: primary,
+      counts: countByType(items),
+      items: items,
+      graph: graph          // panoId -> { label, neighbors:[{to,yaw}] }
+    };
+  }
+
+  function countByType(items) {
+    var c = {};
+    items.forEach(function (it) { c[it.type] = (c[it.type] || 0) + 1; });
+    return c;
+  }
+
+  var api = { parseTour: parseTour, parseLocale: parseLocale, scanObjects: scanObjects };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.VTParser = api;
+})(typeof self !== 'undefined' ? self : this);
+
+</script>
+
+<!-- ===== Widget source (shipped verbatim into vtsearch.js) ===== -->
+<script type="text/plain" id="vt-widget-src">
+/* ============================================================================
+   VT Search — runtime widget for 3DVista virtual tours
+   ----------------------------------------------------------------------------
+   Self-contained, dependency-free, works online AND offline.
+   Expects two globals to have been defined just before it loads:
+       VT_SEARCH_DATA   = { title, items:[...] }    (the search index)
+       VT_SEARCH_CONFIG = { position, accent, ... }  (optional overrides)
+   The VT Search Builder concatenates [index][config][this file] into vtsearch.js
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var DATA = (typeof VT_SEARCH_DATA !== 'undefined' && VT_SEARCH_DATA) || { items: [] };
+  var CFG = Object.assign({
+    position: 'top-right',   // top-right | top-left | bottom-right | bottom-left
+    accent: '#2da3ff',
+    placeholder: 'Search the tour…',
+    maxResults: 12,
+    browseAll: true,         // show the whole list (grouped) when the box is empty
+    hotspotTriggerDelayMs: 350, // wait after scene change before firing a hotspot
+    guideAlignFrac: 0.14,    // guided walk: doorway counts as "centred" within this fraction of screen width from centre
+    guideAlignDeg: 7,        // …or when the facing is within this many degrees of the doorway yaw
+    guideTurnSpeed: 34,      // deg/sec the camera turns toward each doorway during a guided walk
+    guideAlignTimeoutMs: 22000 // hard cap per hop before we enter anyway (a full ~180° turn fits well inside this)
+  }, (typeof VT_SEARCH_CONFIG !== 'undefined' && VT_SEARCH_CONFIG) || {});
+
+  var TYPE_META = {
+    scene:   { label: 'Scene',   color: '#2da3ff', icon: 'M3 10l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z' },
+    hotspot: { label: 'Hotspot', color: '#ff9f43', icon: 'M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z' },
+    photo:   { label: 'Photo',   color: '#26de81', icon: 'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm2 11h12l-4-5-3 4-2-2z' },
+    video:   { label: 'Video',   color: '#a55eea', icon: 'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm6 3v8l6-4z' },
+    album:   { label: 'Album',   color: '#fd79a8', icon: 'M4 7h4l2-2h4a1 1 0 0 1 1 1v1h4a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z' }
+  };
+
+  // -------------------------------------------------------------------------
+  // Wait until the DOM and the 3DVista tour runtime are both ready.
+  // -------------------------------------------------------------------------
+  function whenReady(cb) {
+    function domReady(fn) {
+      if (document.readyState === 'complete' || document.readyState === 'interactive') setTimeout(fn, 0);
+      else document.addEventListener('DOMContentLoaded', fn);
+    }
+    domReady(function () {
+      var tries = 0;
+      (function poll() {
+        var ok = (typeof window.tour !== 'undefined' && window.tour) ||
+                 (typeof window.setMediaByName === 'function') ||
+                 (typeof window.TDV !== 'undefined');
+        if (ok || tries++ > 200) cb();   // ~30s grace, then build anyway
+        else setTimeout(poll, 150);
+      })();
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Navigation — drive the tour's own player API.
+  // -------------------------------------------------------------------------
+  function gotoMediaByName(name) {
+    try {
+      // tour.setMediaByName returns the media object when found, undefined otherwise
+      if (window.tour && typeof window.tour.setMediaByName === 'function') {
+        return window.tour.setMediaByName(name) != null;
+      }
+      if (typeof window.setMediaByName === 'function') { window.setMediaByName(name); return true; }
+    } catch (e) { /* ignore */ }
+    return false;
+  }
+
+  function triggerOverlay(overlayId) {
+    var tries = 0;
+    (function attempt() {
+      try {
+        var t = window.tour;
+        var player = t && (t.player || (t._getRootPlayer && t._getRootPlayer()));
+        var ov = player && player.getById && player.getById(overlayId);
+        if (ov) {
+          var areas = ov.get && ov.get('areas');
+          if (areas && areas.forEach) { areas.forEach(function (a) { a.trigger('click'); }); return; }
+          if (ov.trigger) { ov.trigger('click'); return; }
+        }
+      } catch (e) { /* not ready yet */ }
+      if (tries++ < 40) setTimeout(attempt, 150);
+    })();
+  }
+
+  // Returns true if we managed to take the visitor somewhere meaningful.
+  // Navigation always uses the ORIGINAL media label, never a renamed display name.
+  function navigate(item) {
+    if (item.type === 'hotspot') {
+      var changed = item.panoLabel ? gotoMediaByName(item.panoLabel) : false;
+      setTimeout(function () { triggerOverlay(item.overlayId); }, changed ? CFG.hotspotTriggerDelayMs : 0);
+      return changed;                                  // landed in the hotspot's scene
+    }
+    var navName = item.label || item.name;
+    if (gotoMediaByName(navName)) return true;          // open the media directly when possible…
+    if (item.panoLabel && gotoMediaByName(item.panoLabel)) return true;  // …else its scene
+    return false;                                      // the player can't open this item
+  }
+
+  // -------------------------------------------------------------------------
+  // Guided navigation — walk the scene graph from the current scene to a target,
+  // rotating toward each doorway before stepping through it.
+  // -------------------------------------------------------------------------
+  var GRAPH = DATA.graph || null;
+
+  function currentSceneId() {
+    try {
+      var pl = pano();
+      var v = pl && pl.get && pl.get('panorama');
+      if (!v) return null;
+      if (typeof v === 'string') return v;
+      return (v.get && v.get('id')) || null;   // 3DVista may return the media object
+    } catch (e) { return null; }
+  }
+
+  // Breadth-first path of scene ids from -> to (inclusive). null if none.
+  function findPath(from, to) {
+    if (!GRAPH || !GRAPH[from] || !GRAPH[to]) return null;
+    if (from === to) return [from];
+    var q = [from], prev = {}, seen = {}; seen[from] = 1;
+    while (q.length) {
+      var cur = q.shift(), nb = (GRAPH[cur].neighbors || []);
+      for (var i = 0; i < nb.length; i++) {
+        var nx = nb[i].to;
+        if (!GRAPH[nx] || seen[nx]) continue;
+        seen[nx] = 1; prev[nx] = cur;
+        if (nx === to) { var path = [to], c = to; while (prev[c] !== undefined) { c = prev[c]; path.unshift(c); } return path; }
+        q.push(nx);
+      }
+    }
+    return null;
+  }
+  // The edge (doorway) from scene a to scene b: { to, yaw, overlayID }.
+  function edgeBetween(a, b) {
+    var nb = (GRAPH[a] && GRAPH[a].neighbors) || [];
+    for (var i = 0; i < nb.length; i++) if (nb[i].to === b) return nb[i];
+    return null;
+  }
+  // Does this object expose the panorama-player API we drive?
+  function panoUsable(o) { return !!(o && typeof o.getScreenPosition === 'function' && typeof o.get === 'function' && typeof o.moveLeft === 'function'); }
+  // Resolve the ACTIVE panorama player. On a dual-skin (desktop/mobile) tour each skin has
+  // its own PanoramaPlayer with a different id (the mobile skin uses MainViewer_mobilePanorama-
+  // Player), so a hardcoded id returns null on the mobile skin. Fall back to the PanoramaPlayer
+  // that currently has media loaded — the skin actually on screen — so navigation and guided
+  // walks work on both skins.
+  function pano() {
+    try {
+      var p = window.tour && window.tour.player; if (!p) return null;
+      var direct = p.getById && p.getById('MainViewerPanoramaPlayer');
+      if (panoUsable(direct)) return direct;                  // desktop skin / default-named player
+      var all = (p.getByClassName && p.getByClassName('PanoramaPlayer')) || [];
+      var anyUsable = null;
+      for (var i = 0; i < all.length; i++) {
+        if (!panoUsable(all[i])) continue;
+        anyUsable = anyUsable || all[i];
+        try { if (all[i].get('panorama')) return all[i]; } catch (e) { /* keep looking */ }
+      }
+      return anyUsable;                                       // last resort: any usable one
+    } catch (e) { return null; }
+  }
+
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  // Shortest signed angle a→b in degrees (handles 360° wrap), e.g. 170 vs -170 = 20.
+  function angDiff(a, b) { return ((a - b + 540) % 360) - 180; }
+
+  // The panorama render canvas (the largest one) — for screen centre & width.
+  function renderCanvas() {
+    var best = null, ba = 0;
+    document.querySelectorAll('canvas').forEach(function (c) { var r = c.getBoundingClientRect(); var a = r.width * r.height; if (a > ba) { ba = a; best = r; } });
+    return best;
+  }
+  // Is the doorway hotspot currently near the CENTRE of the view? Uses the player's
+  // live screen-projection (getScreenPosition), which tracks the real auto-rotating
+  // camera — unlike get('yaw'), which goes stale. null/huge ⇒ behind the camera.
+  function doorwayCentred(edge) {
+    try {
+      var pl = pano();
+      if (!pl || !pl.getScreenPosition || !edge || edge.yaw == null) return false;
+      var sp = pl.getScreenPosition(edge.yaw, edge.pitch != null ? edge.pitch : 0);
+      if (!sp || !isFinite(sp.x)) return false;
+      var cv = renderCanvas(); if (!cv) return false;
+      var centerX = cv.left + cv.width / 2;
+      return Math.abs(sp.x - centerX) <= cv.width * CFG.guideAlignFrac;
+    } catch (e) { return false; }
+  }
+
+  // Signed horizontal offset of the doorway from screen centre (px) via the live
+  // projection. >0 = right of centre, <0 = left, null = behind the camera / not visible.
+  function doorSignedDist(edge) {
+    try {
+      var pl = pano();
+      if (!pl || !pl.getScreenPosition || !edge || edge.yaw == null) return null;
+      var sp = pl.getScreenPosition(edge.yaw, edge.pitch != null ? edge.pitch : 0);
+      if (!sp || !isFinite(sp.x)) return null;
+      var cv = renderCanvas(); if (!cv) return null;
+      return sp.x - (cv.left + cv.width / 2);
+    } catch (e) { return null; }
+  }
+
+  function panStop() { try { var p = pano(); if (p && p.stop) p.stop(); } catch (e) {} }
+
+  // While guiding we aim the camera ourselves, so suspend the tour's own idle
+  // auto-rotation (which only ever spins one way); restore it afterwards.
+  var idleSaved = [];
+  function suspendIdle() {
+    try {
+      var p = pano(); if (!p) return; var cam = p.get && p.get('camera'); if (!cam || !cam.set) return;
+      var seen = false; for (var i = 0; i < idleSaved.length; i++) if (idleSaved[i].cam === cam) seen = true;
+      if (!seen) { var v = null; try { v = cam.get('timeToIdle'); } catch (e) {} idleSaved.push({ cam: cam, val: v }); }
+      try { cam.set('timeToIdle', 9999999); } catch (e) {}   // effectively disable idle auto-rotation
+    } catch (e) {}
+  }
+  // Temporarily speed up the pan so turns aren't sluggish; restored after the walk.
+  var speedSaved = [];
+  function bumpSpeed() {
+    try {
+      var p = pano(); if (!p) return; var cam = p.get && p.get('camera'); if (!cam || !cam.set) return;
+      var seen = false; for (var i = 0; i < speedSaved.length; i++) if (speedSaved[i].cam === cam) seen = true;
+      var cur = null; try { cur = cam.get('automaticRotationSpeed'); } catch (e) {}
+      if (!seen) speedSaved.push({ cam: cam, val: cur });
+      try { cam.set('automaticRotationSpeed', Math.max(Math.abs(cur || 10), CFG.guideTurnSpeed)); } catch (e) {}
+    } catch (e) {}
+  }
+  function restoreIdle() {
+    idleSaved.forEach(function (s) { try { if (s.val != null && s.cam.set) s.cam.set('timeToIdle', s.val); } catch (e) {} });
+    speedSaved.forEach(function (s) { try { if (s.val != null && s.cam.set) s.cam.set('automaticRotationSpeed', s.val); } catch (e) {} });
+    idleSaved = []; speedSaved = []; panStop();
+  }
+
+  // The camera controller that backs moveLeft/moveRight (the object the player delegates
+  // its pan + camera-move calls to — it exposes both `wl` and `moveTo`).
+  function rotController() {
+    var p = pano(); if (!p) return null;
+    try { if (p.U && typeof p.U.wl === 'function') return p.U; } catch (e) {}
+    try {
+      var names = Object.getOwnPropertyNames(p);
+      for (var i = 0; i < names.length; i++) { var o = p[names[i]]; if (o && typeof o === 'object' && typeof o.wl === 'function' && typeof o.moveTo === 'function') return o; }
+    } catch (e) {}
+    return null;
+  }
+  // The pan speed `nR` is read ONCE from each scene's automaticRotationSpeed when its
+  // camera loads, so scenes the author left without auto-rotation get nR=0 → moveLeft/
+  // moveRight do nothing. Force a live nonzero speed so a guided turn works on EVERY scene,
+  // regardless of how that scene was authored. (nR is re-read fresh on the next scene load,
+  // so this never persists past the walk.)
+  function forceRotSpeed(v) { var c = rotController(); if (c) { try { c.nR = v; } catch (e) {} } }
+
+  // The camera's TRUE current facing yaw. get('yaw') is stale, so derive it from the live
+  // projection: the panorama yaw whose on-screen point sits nearest the centre of view.
+  function facingYaw() {
+    try {
+      var pl = pano(); if (!pl || !pl.getScreenPosition) return null;
+      var cv = renderCanvas(); var cx = cv ? (cv.left + cv.width / 2) : 250;
+      var bestY = null, bestD = Infinity;
+      for (var y = -179; y <= 180; y += 4) {
+        var s = null; try { s = pl.getScreenPosition(y, 0); } catch (e) {}
+        if (s && isFinite(s.x)) { var d = Math.abs(s.x - cx); if (d < bestD) { bestD = d; bestY = y; } }
+      }
+      return bestY;
+    } catch (e) { return null; }
+  }
+
+  // TURN toward the doorway, then "click" it to walk through. moveLeft()/moveRight() are
+  // the player's real rotation controls (they spin the camera; the engine ignores the
+  // SIGN of automaticRotationSpeed). To pick the SHORT way we compute the signed angle
+  // between the live facing and the doorway yaw, turn that way, and SELF-CORRECT if the
+  // angle starts growing (covers either left/right mapping). Stop + trigger when centred.
+  function alignThenEnter(edge, label, gen) {
+    return new Promise(function (resolve) {
+      var fired = false;
+      function fire() { if (fired) return; fired = true; panStop(); if (edge && edge.overlayID) triggerOverlay(edge.overlayID); else if (label) gotoMediaByName(label); resolve(); }
+      if (!edge || edge.yaw == null) { fire(); return; }
+      suspendIdle(); bumpSpeed();
+      var pl = pano(), dir = null, lastAbs = null, lastSwitch = 0, t0 = +new Date();
+      var prevFacing = null, movedAt = +new Date();
+      // give this scene a live nonzero pan speed (its authored auto-rotation may be 0)
+      function issue(d) { dir = d; forceRotSpeed(CFG.guideTurnSpeed); try { panStop(); if (d === 'R') { if (pl.moveRight) pl.moveRight(); } else { if (pl.moveLeft) pl.moveLeft(); } } catch (e) {} }
+      function turn(d) { if (d !== dir) issue(d); }
+      var f0 = facingYaw(), a0 = (f0 != null) ? angDiff(edge.yaw, f0) : 0;
+      issue(a0 >= 0 ? 'R' : 'L');                          // first guess; corrected below if it's the long way
+      var iv = setInterval(function () {
+        if (!alive(gen)) { clearInterval(iv); panStop(); resolve(); return; }
+        var dt = +new Date() - t0;
+        var f = facingYaw(); var ang = (f != null) ? angDiff(edge.yaw, f) : null;   // signed offset, door − facing
+        var cv = renderCanvas(); var tolPx = cv ? cv.width * CFG.guideAlignFrac : 70;
+        var dd = doorSignedDist(edge);                                              // px offset when door is on-screen
+        var centred = (dd != null && Math.abs(dd) <= tolPx) || (ang != null && Math.abs(ang) <= CFG.guideAlignDeg);
+        if (centred && dt > 250) { clearInterval(iv); fire(); return; }             // facing the door → walk through
+        // motion watchdog: the pan command can be swallowed by the scene-arrival
+        // animation on hops after the first, leaving the camera static. If the facing
+        // isn't actually changing, re-issue the pan so the walk never stalls mid-hop.
+        if (f != null) {
+          if (prevFacing == null || Math.abs(angDiff(f, prevFacing)) > 0.4) movedAt = +new Date();
+          prevFacing = f;
+          if (+new Date() - movedAt > 850) { issue(dir || 'R'); movedAt = +new Date(); }
+        }
+        if (ang != null) {
+          if (lastAbs != null && Math.abs(ang) > lastAbs + 1.5 && dt - lastSwitch > 450) { turn(dir === 'R' ? 'L' : 'R'); lastSwitch = dt; }  // growing → wrong way
+          lastAbs = Math.abs(ang);
+        }
+        if (dt > CFG.guideAlignTimeoutMs) { clearInterval(iv); fire(); }            // safety net
+      }, 120);
+    });
+  }
+
+  var guiding = false, guideGen = 0;
+  function stopGuiding() { guiding = false; guideGen++; restoreIdle(); hideGuideBanner(); }
+  // a walk is still "alive" only while it owns the current generation
+  function alive(gen) { return guiding && gen === guideGen; }
+
+  // Wait until we've arrived at targetId; if the hotspot didn't take us there in
+  // time, fall back to a direct media switch (so a guided walk never gets stuck).
+  function arriveOrFallback(targetId, label, gen) {
+    return new Promise(function (resolve) {
+      var t0 = +new Date(), fellBack = false;
+      var iv = setInterval(function () {
+        if (!alive(gen)) { clearInterval(iv); resolve(); return; }
+        if (currentSceneId() === targetId) { clearInterval(iv); resolve(); return; }   // arrived via hotspot
+        var dt = +new Date() - t0;
+        if (!fellBack && dt > 2200) { fellBack = true; if (label) gotoMediaByName(label); }  // safety net (give the native transition time first)
+        if (dt > 4000) { clearInterval(iv); resolve(); }
+      }, 150);
+    });
+  }
+
+  // Walk to a target scene id. Returns true if a guided walk started.
+  function guideToScene(targetId, targetName) {
+    var from = currentSceneId();
+    var path = from ? findPath(from, targetId) : null;
+    if (!path || path.length < 2) { return false; }       // no route → caller should just jump
+    guideGen++; var gen = guideGen; guiding = true;        // claim this walk's generation
+    showGuideBanner(targetName, 1, path.length - 1);
+    (function stepThrough(i) {
+      if (!alive(gen)) return;                              // stopped or superseded by a newer walk
+      if (i >= path.length) { stopGuiding(); return; }      // arrived → hide banner
+      var fromId = path[i - 1], toId = path[i];
+      var edge = edgeBetween(fromId, toId);
+      var label = (GRAPH[toId] && GRAPH[toId].label) || null;
+      updateGuideBanner(targetName, i, path.length - 1);
+      // For each hop: brief dwell so the scene renders & we can read the facing, then
+      // aim the spin the SHORT way toward the doorway and click it when it centres.
+      wait(i === 1 ? 350 : 800).then(function () {
+        if (!alive(gen)) return;
+        return alignThenEnter(edge, label, gen);          // wait until centred, then walk through
+      }).then(function () {
+        if (!alive(gen)) return;
+        return arriveOrFallback(toId, label, gen);
+      }).then(function () { stepThrough(i + 1); });
+    })(1);
+    return true;
+  }
+
+  // small banner with a Stop control during a guided walk
+  var banner = null;
+  function showGuideBanner(name, step, total) {
+    if (!banner) {
+      banner = document.createElement('div'); banner.id = 'vtsearch-guide';
+      banner.innerHTML = '<span class="vts-g-txt"></span><button class="vts-g-stop">Stop</button>';
+      document.body.appendChild(banner);
+      banner.querySelector('.vts-g-stop').addEventListener('click', stopGuiding);
+    }
+    banner.style.display = 'flex';
+    updateGuideBanner(name, step, total);
+  }
+  function updateGuideBanner(name, step, total) {
+    if (banner) banner.querySelector('.vts-g-txt').textContent = 'Guiding you to “' + name + '” — step ' + step + ' / ' + total + '…';
+  }
+  function hideGuideBanner() { if (banner) banner.style.display = 'none'; }
+
+  // -------------------------------------------------------------------------
+  // Search — case- AND accent-insensitive, with similarity (typo) tolerance.
+  // -------------------------------------------------------------------------
+  // normalise: lowercase + strip accents (café -> cafe, Förde -> forde)
+  function norm(s) {
+    s = String(s == null ? '' : s).toLowerCase();
+    if (s.normalize) s = s.normalize('NFKD').replace(/[̀-ͯ]/g, '');
+    return s;
+  }
+  function words(s) { return norm(s).split(/[^a-z0-9]+/).filter(Boolean); }
+
+  // Levenshtein edit distance (small strings — cheap)
+  function lev(a, b) {
+    var m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+    var prev = [], i, j; for (j = 0; j <= n; j++) prev[j] = j;
+    for (i = 1; i <= m; i++) {
+      var cur = [i];
+      for (j = 1; j <= n; j++) {
+        var cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      }
+      prev = cur;
+    }
+    return prev[n];
+  }
+  function sim(a, b) { var L = Math.max(a.length, b.length); return L ? 1 - lev(a, b) / L : 0; }
+
+  // How well one query term matches a single word (0 = no match).
+  function termVsWord(t, word) {
+    if (word === t) return 100;
+    if (word.indexOf(t) === 0) return 82;          // prefix:  "livin" -> "living"
+    if (word.indexOf(t) >= 0) return 64;           // contains
+    var s = sim(t, word);
+    if (s >= 0.72) return Math.round(50 * s);      // fuzzy:   "bedrom" -> "bedroom"
+    if (t.length >= 4 && lev(t, word) <= 1) return 48; // single typo on longer words
+    return 0;
+  }
+
+  // item score for a (possibly multi-word) query; -1 means "no match".
+  // Matches the display name AND any aliases (e.g. the original 3DVista name).
+  function score(q, item) {
+    if (!q) return 0;
+    var names = [item.name].concat(item.aliases || []);
+    var best = -1;
+    for (var k = 0; k < names.length; k++) {
+      var nameN = norm(names[k]);
+      if (nameN === q) best = Math.max(best, 1000);
+      else if (nameN.indexOf(q) === 0) best = Math.max(best, 800);
+      else if (nameN.indexOf(q) >= 0) best = Math.max(best, 650);
+    }
+    if (best >= 0) return best;
+    // token search: every query term must match SOME word of name(s)/type/context
+    var hay = [];
+    names.forEach(function (nm) { hay = hay.concat(words(nm)); });
+    hay = hay.concat(words((TYPE_META[item.type] || {}).label || '')).concat(words(item.panoLabel || ''));
+    var terms = q.split(/\s+/).filter(Boolean), total = 0;
+    for (var i = 0; i < terms.length; i++) {
+      var t = terms[i], bw = 0;
+      for (var w = 0; w < hay.length; w++) { var v = termVsWord(t, hay[w]); if (v > bw) bw = v; }
+      if (bw === 0) { names.forEach(function (nm) { var sN = sim(t, norm(nm)); if (sN >= 0.7) bw = Math.max(bw, Math.round(40 * sN)); }); }
+      if (bw === 0) return -1;
+      total += bw;
+    }
+    return total;
+  }
+
+  function search(query) {
+    var q = norm(query).trim();
+    if (!q) return [];
+    var scored = [];
+    for (var i = 0; i < DATA.items.length; i++) {
+      var s = score(q, DATA.items[i]);
+      if (s >= 0) scored.push([s, i, DATA.items[i]]);
+    }
+    scored.sort(function (a, b) { return b[0] - a[0] || a[1] - b[1]; });
+    return scored.slice(0, CFG.maxResults).map(function (x) { return x[2]; });
+  }
+
+  // -------------------------------------------------------------------------
+  // UI
+  // -------------------------------------------------------------------------
+  function injectStyle() {
+    var pos = CFG.position || 'top-right', vert = pos.indexOf('bottom') === 0 ? 'bottom' : 'top';
+    var horz = pos.indexOf('center') >= 0 ? 'center' : (pos.indexOf('left') >= 0 ? 'left' : 'right');
+    // when centered, pin to the horizontal middle and grow symmetrically.
+    // safe-area-inset keeps the icon clear of phone notches / rounded corners / home bar.
+    var safeV = vert === 'top'
+      ? 'top:calc(16px + env(safe-area-inset-top,0px));'
+      : 'bottom:calc(16px + env(safe-area-inset-bottom,0px));';
+    var place = horz === 'center'
+      ? safeV + 'left:50%;transform:translateX(-50%);'
+      : safeV + horz + ':calc(16px + env(safe-area-inset-' + horz + ',0px));';
+    var resAlign = horz === 'center' ? 'margin-left:auto;margin-right:auto;'
+                 : (horz === 'left' ? '' : 'margin-left:auto;');
+    var css = '' +
+    '#vtsearch{position:fixed;' + place + 'z-index:99999;max-width:94vw;-webkit-tap-highlight-color:transparent;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}' +
+    '#vtsearch *{box-sizing:border-box;}' +
+    '#vtsearch button{touch-action:manipulation;}' +
+    '#vtsearch .vts-bar{display:flex;align-items:center;background:rgba(20,22,26,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);border-radius:24px;height:44px;overflow:hidden;transition:width .22s ease, box-shadow .2s;width:44px;box-shadow:0 4px 18px rgba(0,0,0,.35);}' +
+    '#vtsearch.open .vts-bar{width:320px;box-shadow:0 8px 30px rgba(0,0,0,.5);}' +
+    '@media (max-width:480px){#vtsearch.open .vts-bar{width:min(86vw,360px);}}' +
+    '#vtsearch .vts-btn{flex:0 0 44px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:0;padding:0;}' +
+    '#vtsearch .vts-btn svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;}' +
+    '#vtsearch .vts-input{flex:1;min-width:0;background:none;border:0;outline:none;color:#fff;font-size:16px;padding:0 6px 0 2px;opacity:0;transition:opacity .2s;}' +
+    '#vtsearch.open .vts-input{opacity:1;}' +
+    '#vtsearch .vts-clear{flex:0 0 30px;width:30px;height:44px;border:0;background:none;color:#9aa3ad;cursor:pointer;font-size:18px;display:none;}' +
+    '#vtsearch.open .vts-clear.show{display:block;}' +
+    '#vtsearch .vts-results{margin-top:8px;background:rgba(20,22,26,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:14px;max-height:min(60vh,460px);overflow:auto;display:none;box-shadow:0 12px 40px rgba(0,0,0,.55);' + resAlign + '}' +
+    '#vtsearch.open .vts-results.show{display:block;}' +
+    '#vtsearch .vts-row{display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06);}' +
+    '#vtsearch .vts-row:last-child{border-bottom:0;}' +
+    '#vtsearch .vts-row.active,#vtsearch .vts-row:hover{background:rgba(255,255,255,.09);}' +
+    '#vtsearch .vts-thumb{flex:0 0 46px;width:46px;height:34px;border-radius:6px;background:#2a2e35 center/cover no-repeat;display:flex;align-items:center;justify-content:center;}' +
+    '#vtsearch .vts-thumb svg{width:18px;height:18px;}' +
+    '#vtsearch .vts-meta{flex:1;min-width:0;}' +
+    '#vtsearch .vts-name{color:#fff;font-size:14px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+    '#vtsearch .vts-sub{color:#9aa3ad;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}' +
+    '#vtsearch .vts-badge{flex:0 0 auto;font-size:10px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;padding:2px 7px;border-radius:10px;color:#0c0e11;}' +
+    '#vtsearch .vts-empty{padding:14px;color:#9aa3ad;font-size:13px;text-align:center;}' +
+    '#vtsearch .vts-head{padding:8px 12px 4px;font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#7f8893;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06);}' +
+    '#vtsearch .vts-guide{flex:0 0 auto;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;border-radius:9px;padding:3px 9px;cursor:pointer;margin-left:6px;white-space:nowrap;}' +
+    '#vtsearch .vts-guide:hover{background:' + CFG.accent + ';color:#06121f;border-color:' + CFG.accent + ';}' +
+    '#vtsearch ::-webkit-scrollbar{width:8px;}#vtsearch ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:4px;}' +
+    '#vtsearch-guide{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));max-width:94vw;z-index:100000;display:none;align-items:center;gap:12px;background:rgba(20,22,26,.94);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:10px 14px 10px 18px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);}' +
+    '#vtsearch-guide .vts-g-stop{background:' + CFG.accent + ';color:#06121f;border:0;border-radius:14px;padding:6px 14px;font-weight:600;cursor:pointer;font-size:13px;}';
+    var el = document.createElement('style');
+    el.id = 'vtsearch-style';
+    el.textContent = css;
+    document.head.appendChild(el);
+  }
+
+  function svgIcon(path, stroke) {
+    return '<svg viewBox="0 0 24 24" style="' + (stroke ? '' : 'fill:currentColor;stroke:none;') + '"><path d="' + path + '"/></svg>';
+  }
+
+  function build() {
+    injectStyle();
+    var root = document.createElement('div');
+    root.id = 'vtsearch';
+    root.innerHTML =
+      '<div class="vts-bar">' +
+        '<button class="vts-btn" aria-label="Search" title="Search the tour">' +
+          '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>' +
+        '</button>' +
+        '<input class="vts-input" type="text" placeholder="' + escapeAttr(CFG.placeholder) + '" autocomplete="off" spellcheck="false"/>' +
+        '<button class="vts-clear" aria-label="Clear">×</button>' +
+      '</div>' +
+      '<div class="vts-results" role="listbox"></div>';
+    document.body.appendChild(root);
+
+    // Dual-skin tours can rebuild the DOM when switching desktop<->mobile.
+    // Re-attach our widget (and style) if a skin swap ever removes them.
+    try {
+      var reattach = new MutationObserver(function () {
+        if (!document.getElementById('vtsearch-style')) injectStyle();
+        if (!document.body.contains(root)) document.body.appendChild(root);
+      });
+      reattach.observe(document.body, { childList: true });
+    } catch (e) { /* MutationObserver unavailable — ignore */ }
+
+    var bar = root.querySelector('.vts-bar');
+    var btn = root.querySelector('.vts-btn');
+    var input = root.querySelector('.vts-input');
+    var clear = root.querySelector('.vts-clear');
+    var results = root.querySelector('.vts-results');
+    var activeIdx = -1, current = [];
+
+    function open() { root.classList.add('open'); render(input.value); setTimeout(function () { input.focus(); }, 60); }
+    function close() { root.classList.remove('open'); results.classList.remove('show'); }
+    function toggle() { root.classList.contains('open') ? close() : open(); }
+
+    btn.addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
+
+    input.addEventListener('input', function () { render(input.value); });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; render(''); close(); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (current[activeIdx < 0 ? 0 : activeIdx]) choose(current[activeIdx < 0 ? 0 : activeIdx]); }
+    });
+    clear.addEventListener('click', function () { input.value = ''; render(''); input.focus(); });
+
+    document.addEventListener('click', function (e) { if (!root.contains(e.target)) close(); });
+
+    function move(d) {
+      if (!current.length) return;
+      activeIdx = (activeIdx + d + current.length) % current.length;
+      paintActive();
+    }
+    function paintActive() {
+      var rows = results.querySelectorAll('.vts-row');
+      rows.forEach(function (r, i) { r.classList.toggle('active', i === activeIdx); });
+      if (rows[activeIdx]) rows[activeIdx].scrollIntoView({ block: 'nearest' });
+    }
+    function choose(item) {
+      if (navigate(item) === false) {
+        // The tour's player can't open this item from a script (e.g. album slides).
+        results.innerHTML = '<div class="vts-empty">Can’t open “' + escapeHtml(item.name) +
+          '” directly — open it from the tour’s menu.</div>';
+        results.classList.add('show');
+        return;
+      }
+      close();
+    }
+    // "Guide me" on a scene row: walk there; if there's no route, just jump.
+    function chooseGuide(item) {
+      var started = (item.type === 'scene' && item.sceneId) ? guideToScene(item.sceneId, item.name) : false;
+      if (!started) navigate(item);     // no path (or unknown current scene) → jump
+      close();
+    }
+
+    function rowHtml(it) {
+      var meta = TYPE_META[it.type] || { label: it.type, color: '#888', icon: '' };
+      var sub = it.type === 'hotspot' && it.panoLabel ? ('in ' + it.panoLabel)
+              : it.type === 'scene' ? 'Panorama scene'
+              : meta.label;
+      var thumb = it.thumb
+        ? '<div class="vts-thumb" style="background-image:url(\'' + escapeAttr(it.thumb) + '\')"></div>'
+        : '<div class="vts-thumb" style="color:' + meta.color + '">' + svgIcon(meta.icon, false) + '</div>';
+      var guide = (CFG.guided && GRAPH && it.type === 'scene' && it.sceneId)
+        ? '<button class="vts-guide" title="Walk there step by step">Guide me</button>' : '';
+      return '<div class="vts-row" role="option">' + thumb +
+        '<div class="vts-meta"><div class="vts-name">' + escapeHtml(it.name) + '</div>' +
+        '<div class="vts-sub">' + escapeHtml(sub) + '</div></div>' +
+        '<span class="vts-badge" style="background:' + meta.color + '">' + meta.label + '</span>' + guide + '</div>';
+    }
+
+    // Render the list; when `grouped` is true, insert a heading before each type.
+    function paint(items, grouped) {
+      var html = '', last = null;
+      items.forEach(function (it) {
+        if (grouped && it.type !== last) {
+          var m = TYPE_META[it.type] || { label: it.type };
+          html += '<div class="vts-head">' + escapeHtml(m.label) + 's</div>';
+          last = it.type;
+        }
+        html += rowHtml(it);
+      });
+      results.innerHTML = html;
+      results.classList.add('show');
+      results.querySelectorAll('.vts-row').forEach(function (r, i) {
+        r.addEventListener('click', function () { choose(current[i]); });          // row = Jump
+        r.addEventListener('mouseenter', function () { activeIdx = i; paintActive(); });
+        var gb = r.querySelector('.vts-guide');
+        if (gb) gb.addEventListener('click', function (e) { e.stopPropagation(); chooseGuide(current[i]); });
+      });
+    }
+
+    function render(q) {
+      clear.classList.toggle('show', !!q);
+      activeIdx = -1;
+      if (!q) {
+        // Empty box: browse the whole list (if the publisher enabled it), else nothing.
+        if (CFG.browseAll) { current = DATA.items.slice(); paint(current, true); }
+        else { current = []; results.classList.remove('show'); results.innerHTML = ''; }
+        return;
+      }
+      current = search(q);
+      if (!current.length) {
+        results.innerHTML = '<div class="vts-empty">No matches for “' + escapeHtml(q) + '”</div>';
+        results.classList.add('show'); return;
+      }
+      paint(current, false);
+    }
+  }
+
+  function escapeHtml(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function escapeAttr(s) { return escapeHtml(s).replace(/'/g, '&#39;'); }
+
+  if (!DATA.items || !DATA.items.length) {
+    console.warn('[vtsearch] No search items found in VT_SEARCH_DATA.');
+    return;
+  }
+  whenReady(build);
+})();
+
+</script>
+
+<!-- ===== Builder UI logic ===== -->
+<script>
+(function(){
+  'use strict';
+  var WIDGET_SRC = document.getElementById('vt-widget-src').textContent;
+  var TYPE_COLOR = { scene:'#2da3ff', hotspot:'#ff9f43', photo:'#26de81', video:'#a55eea', album:'#fd79a8' };
+  var TYPE_LABEL = { scene:'Scene', hotspot:'Hotspot', photo:'Photo', video:'Video', album:'Album' };
+
+  var state = { index:null, indexHtmlText:null, indexHtmlName:'index.htm' };
+  var $ = function(id){ return document.getElementById(id); };
+
+  // Guard: the analysis engine must be present. If someone opened the internal
+  // build file (builder-shell.html) instead of VT-Search-Builder.html, it won't be.
+  var ENGINE_OK = (typeof VTParser !== 'undefined') && WIDGET_SRC && WIDGET_SRC.indexOf('VT_SEARCH_DATA') >= 0;
+
+  // ---- file intake -------------------------------------------------------
+  var drop = $('drop'), picker = $('picker');
+  drop.addEventListener('click', function(){ picker.click(); });
+  $('pickBtn').addEventListener('click', function(e){ e.stopPropagation(); picker.click(); });
+
+  // Shown ONLY after a real drag-and-drop attempt fails (e.g. Chrome blocking a
+  // folder drop on a local file). Not shown proactively — drag works in Firefox.
+  function dropFailedHelp(msg){
+    setStatus(msg, true);
+    var tip = $('localTip'); if(tip) tip.classList.remove('hide');
+    var b = $('pickBtn'); if(b){ b.classList.add('pulse'); setTimeout(function(){ b.classList.remove('pulse'); }, 2400); }
+  }
+
+  // Accept a drop ANYWHERE on the page (not just inside the box) and stop the
+  // browser from trying to open the dropped item.
+  function stop(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  ['dragenter','dragover'].forEach(function(e){ window.addEventListener(e, function(ev){ stop(ev); drop.classList.add('hover'); }, false); });
+  ['dragleave','dragend'].forEach(function(e){ window.addEventListener(e, function(ev){ stop(ev); if(e==='dragleave' && ev.relatedTarget) return; drop.classList.remove('hover'); }, false); });
+  window.addEventListener('drop', onDrop, false);
+
+  // Recursively read a dropped directory tree to completion (no timeouts).
+  function readAllEntries(reader){
+    return new Promise(function(resolve){
+      var all=[];
+      (function next(){
+        reader.readEntries(function(batch){
+          if(!batch || !batch.length) return resolve(all);
+          all = all.concat(Array.prototype.slice.call(batch));
+          next();                       // readEntries returns at most ~100 at a time
+        }, function(){ resolve(all); });
+      })();
+    });
+  }
+  function walkEntry(entry, path){
+    return new Promise(function(resolve){
+      if(!entry){ resolve([]); return; }
+      if(entry.isFile){
+        entry.file(function(f){ try{ f._rel = path + f.name; }catch(e){} resolve([f]); }, function(){ resolve([]); });
+      } else if(entry.isDirectory){
+        readAllEntries(entry.createReader()).then(function(entries){
+          Promise.all(entries.map(function(e){ return walkEntry(e, path + entry.name + '/'); }))
+                 .then(function(arrs){ resolve(Array.prototype.concat.apply([], arrs)); });
+        });
+      } else resolve([]);
+    });
+  }
+
+  function onDrop(ev){
+    stop(ev); drop.classList.remove('hover');
+    var dt = ev.dataTransfer; if(!dt) return;
+    // Grab entries synchronously (dataTransfer.items is invalidated after this turn).
+    var entries = [];
+    if(dt.items && dt.items.length){
+      for(var i=0;i<dt.items.length;i++){
+        var getEntry = dt.items[i].webkitGetAsEntry || dt.items[i].getAsEntry;
+        var en = getEntry ? getEntry.call(dt.items[i]) : null;
+        if(en) entries.push(en);
+      }
+    }
+    if(entries.length){
+      setStatus('Reading the tour folder…');
+      Promise.all(entries.map(function(e){ return walkEntry(e, ''); })).then(function(arrs){
+        var files = Array.prototype.concat.apply([], arrs);
+        if(!files.length){ dropFailedHelp('Drag-and-drop didn’t read that folder — please use the “📁 Choose tour folder…” button (see the tip above).'); return; }
+        handleFiles(files);
+      });
+    } else if(dt.files && dt.files.length){
+      handleFiles(Array.prototype.slice.call(dt.files));   // some browsers only expose .files
+    } else {
+      dropFailedHelp('Drag-and-drop didn’t read that folder — please use the “📁 Choose tour folder…” button (see the tip above).');
+    }
+  }
+
+  picker.addEventListener('change', function(){ handleFiles(Array.prototype.slice.call(picker.files)); });
+
+  function relPath(f){ return f._rel || f.webkitRelativePath || f.name; }
+  function readText(f){ return new Promise(function(res){ var r=new FileReader(); r.onload=function(){res(r.result);}; r.onerror=function(){res('');}; r.readAsText(f); }); }
+
+  function handleFiles(files){
+    if(!ENGINE_OK){
+      setStatus('This page didn\'t load its engine. Make sure you opened VT-Search-Builder.html (not builder-shell.html or a source file).', true);
+      return;
+    }
+    if(!files || !files.length){ setStatus('No files received. Use the “Choose tour folder…” button.', true); return; }
+    var byPath = {};
+    files.forEach(function(f){ byPath[relPath(f).replace(/\\/g,'/')] = f; });
+    var paths = Object.keys(byPath);
+    state.files = byPath;                 // keep EVERY file for the full re-export
+    state.totalBytes = paths.reduce(function(a,p){ return a + (byPath[p].size||0); }, 0);
+    state.fileCount = paths.length;
+    var find = function(test){ var p = paths.find(test); return p?byPath[p]:null; };
+
+    // Read EVERY top-level script*.js (dual-skin tours may split data across
+    // script_general.js / script_desktop.js / script_mobile.js, etc.).
+    var scriptFiles = paths.filter(function(p){ return /(^|\/)script[^\/]*\.js$/i.test(p) && !/(^|\/)lib\//i.test(p); }).map(function(p){return byPath[p];});
+    var fIndex = find(function(p){ return /(^|\/)index\.html?$/i.test(p); });
+    var locFiles = paths.filter(function(p){ return /(^|\/)locale\/[^/]+\.txt$/i.test(p); }).map(function(p){return byPath[p];});
+
+    if(!scriptFiles.length){ setStatus('Could not find any script*.js — is this a 3DVista HTML (website) export?', true); return; }
+    setStatus('Reading ' + files.length + ' files…');
+
+    var nScripts = scriptFiles.length;
+    var locNames = locFiles.map(function(f){ return relPath(f).split('/').pop().replace(/\.txt$/i,''); });
+    Promise.all(scriptFiles.map(readText)
+                  .concat([ fIndex?readText(fIndex):Promise.resolve(null) ])
+                  .concat(locFiles.map(readText))).then(function(out){
+      try{
+        var scripts = out.slice(0, nScripts);
+        var indexHtml = out[nScripts];
+        var localeTexts = out.slice(nScripts + 1);
+        var locales={};
+        locFiles.forEach(function(f,i){ locales[locNames[i]] = localeTexts[i]; });
+        if(fIndex){ state.indexHtmlText = indexHtml; state.indexHtmlName = relPath(fIndex).split('/').pop();
+                    state.indexRel = relPath(fIndex).replace(/\\/g,'/'); }
+        else { state.indexHtmlText = null; state.indexRel = null; }
+
+        var res = VTParser.parseTour({ scripts:scripts, locales:locales });
+        if(!res.items.length){ setStatus('Parsed the tour but found nothing searchable (the scenes/photos may be unnamed in 3DVista).', true); return; }
+        state.index = res;
+        // Only types the player can reliably OPEN are on by default. Photos/albums/
+        // videos usually can't be opened by a script, so they start unticked (the
+        // publisher can opt them in — see the note under the toggles).
+        var RELIABLE = { scene:true, hotspot:true };
+        state.enabledTypes = {};
+        Object.keys(res.counts).forEach(function(t){ state.enabledTypes[t] = !!RELIABLE[t]; });
+        state.renames = {};           // itemKey -> custom name
+        state.keywords = {};          // itemKey -> extra search words (comma-separated)
+        state.thumbData = {};         // thumb path -> data URL (cache)
+        setStatus('Found ' + res.items.length + ' searchable items in ' + (locNames.length||1) + ' locale(s). ✓');
+        renderStats(); renderTypeToggles(); renderRenameList(); renderPreview(''); buildOutputs(); renderSizeNote();
+        $('step2').classList.remove('hide'); $('step3').classList.remove('hide');
+        $('newSession').classList.remove('hide');
+      }catch(err){
+        setStatus('Something went wrong while analyzing the tour: ' + (err && err.message ? err.message : err), true);
+      }
+    });
+  }
+
+  function setStatus(msg, bad){ var s=$('status'); s.textContent=msg; s.className='note '+(bad?'warn':'ok'); }
+
+  function humanSize(b){
+    if(b>=1073741824) return (b/1073741824).toFixed(b>=10737418240?0:1)+' GB';
+    if(b>=1048576) return Math.round(b/1048576)+' MB';
+    return Math.max(1,Math.round(b/1024))+' KB';
+  }
+  // Recommend an option based on how heavy the tour is.
+  var BIG_TOUR = 1073741824; // ~1 GB
+  function renderSizeNote(){
+    var el=$('sizeNote'), bytes=state.totalBytes||0, sz=humanSize(bytes);
+    if(bytes >= BIG_TOUR){
+      el.className='callout rec-two';
+      el.innerHTML='<b>Heads-up: this is a large tour (~'+sz+', '+state.fileCount+' files).</b> '+
+        'For tours this big, <b>Option B (the two small files)</b> is the safer choice — Option A may be slow or run out of memory while zipping everything. See both options below.';
+    } else {
+      el.className='callout rec-zip';
+      el.innerHTML='<b>This tour is '+sz+' ('+state.fileCount+' files).</b> '+
+        'That\'s a comfortable size — <b>Option A (one-click .zip)</b> is recommended. Option B is also available if you prefer to add the files yourself.';
+    }
+  }
+
+  // ---- stats + preview ---------------------------------------------------
+  function renderStats(){
+    var c = state.index.counts, host=$('stats'); host.innerHTML='';
+    var order=['scene','hotspot','photo','video','album'];
+    order.forEach(function(t){ if(!c[t]) return;
+      var d=document.createElement('div'); d.className='stat';
+      d.innerHTML='<b style="color:'+TYPE_COLOR[t]+'">'+c[t]+'</b><span>'+TYPE_LABEL[t]+(c[t]>1?'s':'')+'</span>';
+      host.appendChild(d);
+    });
+    var total=document.createElement('div'); total.className='stat';
+    total.innerHTML='<b>'+state.index.items.length+'</b><span>Total</span>'; host.appendChild(total);
+  }
+
+  // items the user has chosen to make searchable
+  function enabledItems(){
+    var en = state.enabledTypes || {};
+    return state.index.items.filter(function(it){ return en[it.type]; });
+  }
+
+  function itemKey(it){ return it.type+'|'+it.id+'|'+(it.panoId||''); }
+
+  function parseKeywords(str){ return String(str||'').split(/[,;\n]+/).map(function(s){return s.trim();}).filter(Boolean); }
+
+  // Apply the user's renames + keywords: produce the display name and the list of
+  // extra searchable terms (original name + any keywords typed by the publisher).
+  function applyRename(it){
+    var key=itemKey(it), custom=(state.renames||{})[key];
+    var out={}; for(var k in it) out[k]=it[k];
+    var aliases=[];
+    if(custom && custom.trim() && custom.trim()!==it.label){
+      out.name=custom.trim();
+      if(it.label && it.label!==out.name) aliases.push(it.label);   // keep original searchable
+    } else { out.name=it.label!=null?it.label:it.name; }
+    // any name the parser found but didn't choose as primary (e.g. a tooltip AND a
+    // distinct 3DVista editor name) stays searchable too
+    (it.altNames||[]).forEach(function(n){ if(n && n!==out.name && aliases.indexOf(n)<0) aliases.push(n); });
+    parseKeywords((state.keywords||{})[key]).forEach(function(kw){ if(aliases.indexOf(kw)<0 && kw!==out.name) aliases.push(kw); });
+    out.aliases=aliases;
+    return out;
+  }
+  function finalItems(){ return enabledItems().map(applyRename); }
+
+  // Find the dropped File for a tour-relative thumb path (e.g. "media/x_t.jpg").
+  function findThumbFile(thumbPath){
+    if(!thumbPath || !state.files) return null;
+    var want=thumbPath.replace(/^\/+/,'').toLowerCase();
+    var paths=Object.keys(state.files);
+    for(var i=0;i<paths.length;i++){ if(paths[i].toLowerCase().endsWith(want)) return state.files[paths[i]]; }
+    return null;
+  }
+  // Load a thumbnail as a DATA URL (base64) and apply it to `el`. Data URLs render
+  // even when the tool is opened from file:// (blob: URLs get a null origin there
+  // and Chrome refuses to paint them — this was the "thumbnails don't show" bug).
+  function setThumb(el, thumbPath){
+    if(!el || !thumbPath) return;
+    var cached=state.thumbData[thumbPath];
+    if(cached){ el.style.backgroundImage="url('"+cached+"')"; return; }
+    var f=findThumbFile(thumbPath); if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){ state.thumbData[thumbPath]=r.result; el.style.backgroundImage="url('"+r.result+"')"; };
+    r.onerror=function(){};
+    try{ r.readAsDataURL(f); }catch(e){}
+  }
+
+  function renderRenameList(){
+    var host=$('renameList'); if(!host) return;
+    host.innerHTML='';
+    var order=['scene','hotspot','photo','video','album'];
+    order.forEach(function(t){
+      var its=state.index.items.filter(function(i){return i.type===t;});
+      if(!its.length) return;
+      var h=document.createElement('div'); h.className='rn-group';
+      h.innerHTML='<span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+TYPE_COLOR[t]+';margin-right:7px;"></span>'+TYPE_LABEL[t]+'s';
+      host.appendChild(h);
+      its.forEach(function(it){
+        var key=itemKey(it), curName=(state.renames||{})[key]||'', curKw=(state.keywords||{})[key]||'';
+        var row=document.createElement('div'); row.className='rn-row';
+        var thumbEl=document.createElement('div'); thumbEl.className='rn-thumb';
+        thumbEl.innerHTML='<span class="dot" style="background:'+TYPE_COLOR[t]+'"></span>';
+        setThumb(thumbEl, it.thumb);     // async fills the background image (data URL)
+
+        var main=document.createElement('div'); main.className='rn-main';
+        var orig=document.createElement('div'); orig.className='rn-orig';
+        var srcNote = it.nameSource==='generated'
+          ? ' <span class="rn-auto rn-auto-warn" title="No tooltip or editor name was found for this item — this is a placeholder. Give it a real name below.">needs a name</span>'
+          : it.nameSource==='structural'
+            ? ' <span class="rn-auto" title="No public tooltip/label was set in 3DVista for this item — using its internal editor name instead.">auto-named</span>'
+            : '';
+        orig.innerHTML='Original name: <b>'+esc(it.label||'(unnamed)')+'</b>'+srcNote;
+        var fields=document.createElement('div'); fields.className='rn-fields';
+
+        var w1=document.createElement('div'); w1.className='fwrap';
+        w1.innerHTML='<div class="flabel">Display name (optional)</div>';
+        var inName=document.createElement('input'); inName.type='text'; inName.placeholder='Rename it — e.g. “Main Entrance”'; inName.value=curName;
+        if(curName) inName.className='changed';
+        inName.addEventListener('input', function(){ var v=inName.value.trim();
+          if(v) state.renames[key]=v; else delete state.renames[key];
+          inName.classList.toggle('changed', !!v); renderPreview($('pvQuery').value); buildOutputs(); });
+        w1.appendChild(inName);
+
+        var w2=document.createElement('div'); w2.className='fwrap';
+        w2.innerHTML='<div class="flabel">Extra search words (comma-separated)</div>';
+        var inKw=document.createElement('input'); inKw.type='text'; inKw.placeholder='e.g. front door, lobby, start, foyer'; inKw.value=curKw;
+        if(curKw) inKw.className='changed';
+        inKw.addEventListener('input', function(){ var v=inKw.value;
+          if(v.trim()) state.keywords[key]=v; else delete state.keywords[key];
+          inKw.classList.toggle('changed', !!v.trim()); renderPreview($('pvQuery').value); buildOutputs(); });
+        w2.appendChild(inKw);
+
+        fields.appendChild(w1); fields.appendChild(w2);
+        main.appendChild(orig); main.appendChild(fields);
+        row.appendChild(thumbEl); row.appendChild(main); host.appendChild(row);
+      });
+    });
+  }
+
+  function renderTypeToggles(){
+    var host=$('typeToggles'), c=state.index.counts, order=['scene','hotspot','photo','video','album'];
+    var RELIABLE={scene:true,hotspot:true};
+    host.innerHTML='';
+    order.forEach(function(t){ if(!c[t]) return;
+      var lab=document.createElement('label'); lab.className='toggle'+(state.enabledTypes[t]?'':' off');
+      var caveat = RELIABLE[t] ? '' : ' <span class="cnt" title="3DVista usually can’t open these from a script">· may not open</span>';
+      lab.innerHTML='<input type="checkbox" '+(state.enabledTypes[t]?'checked':'')+'/>'+
+        '<span class="dot" style="background:'+TYPE_COLOR[t]+'"></span>'+
+        '<span>'+TYPE_LABEL[t]+(c[t]>1?'s':'')+'</span><span class="cnt">'+c[t]+'</span>'+caveat;
+      var cb=lab.querySelector('input');
+      cb.addEventListener('change', function(){
+        state.enabledTypes[t]=cb.checked;
+        lab.classList.toggle('off', !cb.checked);
+        renderPreview($('pvQuery').value); buildOutputs();
+      });
+      host.appendChild(lab);
+    });
+  }
+
+  // Same case/accent-insensitive + typo-tolerant matching the widget ships with.
+  function pvNorm(s){ s=String(s==null?'':s).toLowerCase(); if(s.normalize) s=s.normalize('NFKD').replace(/[̀-ͯ]/g,''); return s; }
+  function pvWords(s){ return pvNorm(s).split(/[^a-z0-9]+/).filter(Boolean); }
+  function pvLev(a,b){ var m=a.length,n=b.length; if(!m)return n; if(!n)return m; var prev=[],i,j; for(j=0;j<=n;j++)prev[j]=j;
+    for(i=1;i<=m;i++){ var cur=[i]; for(j=1;j<=n;j++){ var c=a.charCodeAt(i-1)===b.charCodeAt(j-1)?0:1; cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+c);} prev=cur; } return prev[n]; }
+  function pvSim(a,b){ var L=Math.max(a.length,b.length); return L?1-pvLev(a,b)/L:0; }
+  function pvTermVsWord(t,w){ if(w===t)return 100; if(w.indexOf(t)===0)return 82; if(w.indexOf(t)>=0)return 64;
+    var s=pvSim(t,w); if(s>=0.72)return Math.round(50*s); if(t.length>=4&&pvLev(t,w)<=1)return 48; return 0; }
+  function pvScore(q,it){
+    var names=[it.name].concat(it.aliases||[]);
+    var bestWhole=-1;
+    names.forEach(function(nm){ var n=pvNorm(nm);
+      if(n===q)bestWhole=Math.max(bestWhole,1000); else if(n.indexOf(q)===0)bestWhole=Math.max(bestWhole,800); else if(n.indexOf(q)>=0)bestWhole=Math.max(bestWhole,650); });
+    if(bestWhole>=0) return bestWhole;
+    var hay=[]; names.forEach(function(nm){ hay=hay.concat(pvWords(nm)); });
+    hay=hay.concat(pvWords(TYPE_LABEL[it.type]||'')).concat(pvWords(it.panoLabel||''));
+    var terms=q.split(/\s+/).filter(Boolean), total=0;
+    for(var i=0;i<terms.length;i++){ var t=terms[i],best=0;
+      for(var w=0;w<hay.length;w++){ var v=pvTermVsWord(t,hay[w]); if(v>best)best=v; }
+      if(best===0){ names.forEach(function(nm){ var sN=pvSim(t,pvNorm(nm)); if(sN>=0.7)best=Math.max(best,Math.round(40*sN)); }); }
+      if(best===0)return -1; total+=best;
+    }
+    return total;
+  }
+  function previewSearch(q){
+    q=pvNorm(q).trim();
+    var items=finalItems();
+    if(!q) return items.slice(0,40);
+    return items.map(function(it){ return [pvScore(q,it),it]; })
+      .filter(function(x){return x[0]>=0;}).sort(function(a,b){return b[0]-a[0];})
+      .slice(0,40).map(function(x){return x[1];});
+  }
+
+  function renderPreview(q){
+    var list=$('pvList'), browse=$('optBrowseAll').checked;
+    var hint=$('pvHint'); if(hint) hint.textContent = browse ? '· empty box = full list' : '· empty box = nothing (browsing off)';
+    // when browsing is off, an empty box shows nothing to visitors — mirror that here
+    if(!String(q||'').trim() && !browse){
+      list.innerHTML='<div class="pv-row"><span class="pv-sub">Browsing is off — visitors will type to search; an empty box shows no list.</span></div>';
+      return;
+    }
+    var rows=previewSearch(q); list.innerHTML='';
+    if(!rows.length){ list.innerHTML='<div class="pv-row"><span class="pv-sub">No matches.</span></div>'; return; }
+    rows.forEach(function(it){
+      var sub = it.type==='hotspot'&&it.panoLabel ? 'in '+it.panoLabel : (it.type==='scene'?'Panorama scene':TYPE_LABEL[it.type]);
+      var div=document.createElement('div'); div.className='pv-row';
+      var th=document.createElement('div'); th.className='pv-thumb'; setThumb(th, it.thumb);
+      var meta=document.createElement('div');
+      meta.innerHTML='<div class="pv-name">'+esc(it.name)+'</div><div class="pv-sub">'+esc(sub)+'</div>';
+      var tag=document.createElement('span'); tag.className='tag'; tag.style.background=TYPE_COLOR[it.type]; tag.textContent=TYPE_LABEL[it.type];
+      div.appendChild(th); div.appendChild(meta); div.appendChild(tag);
+      list.appendChild(div);
+    });
+  }
+  $('pvQuery').addEventListener('input', function(){ renderPreview(this.value); });
+
+  // ---- options + output --------------------------------------------------
+  ['optPos','optAccent','optPlaceholder'].forEach(function(id){ $(id).addEventListener('input', buildOutputs); });
+  ['optBrowseAll','optGuided'].forEach(function(id){ $(id).addEventListener('change', function(){ renderPreview($('pvQuery').value); buildOutputs(); }); });
+
+  function config(){
+    return { position:$('optPos').value, accent:$('optAccent').value, placeholder:$('optPlaceholder').value,
+             browseAll:$('optBrowseAll').checked, guided:$('optGuided').checked };
+  }
+  function generateJs(){
+    // strip builder-only fields; keep what the widget needs (incl. label for nav, aliases for search)
+    var items=finalItems().map(function(it){
+      var o={ type:it.type, id:it.id, label:it.label, name:it.name, thumb:it.thumb||null };
+      if(it.aliases&&it.aliases.length) o.aliases=it.aliases;
+      if(it.type==='hotspot'){ o.panoId=it.panoId; o.panoLabel=it.panoLabel; o.overlayId=it.overlayId; }
+      if(it.type==='scene') o.sceneId=it.id;
+      return o;
+    });
+    var idx={ title:state.index.title, locale:state.index.locale, items:items };
+    if($('optGuided').checked && state.index.graph) idx.graph=state.index.graph;
+    return '/* vtsearch.js — generated by VT Search Builder. Search add-on for a 3DVista tour. */\n'+
+           '/* Drop this file next to index.htm and add: <script src="vtsearch.js"><\\/script> */\n'+
+           'window.VT_SEARCH_DATA='+JSON.stringify(idx)+';\n'+
+           'window.VT_SEARCH_CONFIG='+JSON.stringify(config())+';\n'+
+           WIDGET_SRC;
+  }
+  function patchedHtml(){
+    var html=state.indexHtmlText; if(html==null) return null;
+    if(/vtsearch\.js/.test(html)) return html;
+    if(/<\/body>/i.test(html)) return html.replace(/<\/body>/i, '    <script src="vtsearch.js?v=1"><\/script>\n</body>');
+    return html + '\n<script src="vtsearch.js?v=1"><\/script>\n';
+  }
+
+  function buildOutputs(){
+    if(!state.index) return;
+    var nSel = enabledItems().length;
+    var noneSelected = nSel === 0;
+    // disable exports if the user has unticked every type
+    var zip=$('exportZip'); if(zip) zip.disabled = noneSelected;
+    $('dlJs').classList.toggle('disabled-link', noneSelected);
+    if(noneSelected){
+      $('zipStatus').className='note warn';
+      $('zipStatus').textContent='Tick at least one type of item above to build the search.';
+    } else if(/at least one type/.test($('zipStatus').textContent)){
+      $('zipStatus').textContent='';
+    }
+    setHref($('dlJs'), generateJs(), 'application/javascript', 'vtsearch.js');
+    var ph = patchedHtml();
+    var btn=$('dlHtml');
+    if(ph==null){ btn.classList.add('hide'); }
+    else { btn.classList.remove('hide'); setHref(btn, ph, 'text/html', state.indexHtmlName); }
+  }
+  function setHref(a, text, mime, name){
+    if(a._url) URL.revokeObjectURL(a._url);
+    a._url = URL.createObjectURL(new Blob([text],{type:mime}));
+    a.href=a._url; a.download=name;
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  // ---- one-click full re-export (whole tour + search, as a .zip) ----------
+  var CRC_TABLE=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;
+    for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+  function crc32(buf){var c=0xFFFFFFFF;for(var i=0;i<buf.length;i++)c=CRC_TABLE[(c^buf[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+  function u16(v){return [v&0xFF,(v>>>8)&0xFF];}
+  function u32(v){return [v&0xFF,(v>>>8)&0xFF,(v>>>16)&0xFF,(v>>>24)&0xFF];}
+  function readBytes(f){ return new Promise(function(res){ var r=new FileReader();
+    r.onload=function(){res(new Uint8Array(r.result));}; r.onerror=function(){res(new Uint8Array(0));};
+    r.readAsArrayBuffer(f); }); }
+
+  // minimal STORE-method (no compression) zip writer — dependency-free, offline
+  function buildZip(entries){
+    var enc=new TextEncoder(), chunks=[], central=[], offset=0;
+    entries.forEach(function(e){
+      var nb=enc.encode(e.name), crc=crc32(e.bytes), sz=e.bytes.length;
+      var lh=new Uint8Array([].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0),
+                                      u32(crc),u32(sz),u32(sz),u16(nb.length),u16(0)));
+      chunks.push(lh, nb, e.bytes);
+      var ch=new Uint8Array([].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0),
+                                      u32(crc),u32(sz),u32(sz),u16(nb.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset)));
+      central.push(ch, nb);
+      offset += lh.length + nb.length + sz;
+    });
+    var cdSize=central.reduce(function(a,b){return a+b.length;},0);
+    var eocd=new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(entries.length),u16(entries.length),
+                                      u32(cdSize),u32(offset),u16(0)));
+    return new Blob(chunks.concat(central,[eocd]),{type:'application/zip'});
+  }
+
+  function exportZip(){
+    if(!state.index || !state.files) return;
+    var btn=$('exportZip'), zs=$('zipStatus'), enc=new TextEncoder();
+    btn.disabled=true; var label=btn.textContent; btn.textContent='Packaging…';
+    var paths=Object.keys(state.files);
+    var indexRel=state.indexRel;
+    var dir=indexRel ? indexRel.slice(0, indexRel.lastIndexOf('/')+1) : '';
+    var jsRel=dir+'vtsearch.js';
+    var patched=patchedHtml();
+    var entries=[], i=0, n=paths.length;
+
+    (function step(){
+      if(i<n){
+        var p=paths[i++];
+        if(p===jsRel){ return step(); }                       // replaced below
+        if(indexRel && p===indexRel && patched!=null){ entries.push({name:p,bytes:enc.encode(patched)}); return step(); }
+        readBytes(state.files[p]).then(function(bytes){
+          entries.push({name:p,bytes:bytes});
+          if(i%8===0){ zs.className='note'; zs.textContent='Packaging '+i+' / '+n+' files…'; setTimeout(step,0); }
+          else step();
+        });
+      } else {
+        entries.push({name:jsRel, bytes:enc.encode(generateJs())});
+        zs.textContent='Building zip…';
+        setTimeout(function(){
+          try{
+            var blob=buildZip(entries);
+            var top=(indexRel||'tour').split('/')[0] || 'tour';
+            var fname=top.replace(/\.html?$/i,'')+'_with_search.zip';
+            var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname;
+            document.body.appendChild(a); a.click();
+            setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 3000);
+            zs.className='note ok';
+            zs.textContent='✓ '+fname+' — '+entries.length+' files, '+(blob.size/1048576).toFixed(1)+' MB. Unzip and upload the folder.';
+          }catch(e){ zs.className='note warn'; zs.textContent='Could not package: '+e.message; }
+          btn.disabled=false; btn.textContent=label;
+        },0);
+      }
+    })();
+  }
+  $('exportZip').addEventListener('click', exportZip);
+
+  // ---- start a fresh session (full reload = clean slate + frees memory) ----
+  function newSession(){
+    if(state.index){
+      if(!confirm('Start a new session and load a different tour?\n\nThis clears the current tour from the page. Anything you already downloaded stays on your computer.')) return;
+    }
+    state = {};                 // drop references so a heavy tour is freed immediately
+    location.reload();
+  }
+  ['newSession','newSession2'].forEach(function(id){ var b=$(id); if(b) b.addEventListener('click', newSession); });
+})();
+</script>
+</body>
+</html>
