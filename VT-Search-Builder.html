@@ -107,8 +107,6 @@
   .rn-row input{width:100%;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:13px;}
   .rn-row input:focus{outline:none;border-color:var(--accent);}
   .rn-row input.changed{border-color:var(--accent);background:rgba(45,163,255,.08);}
-  .rn-auto{font-size:10.5px;color:var(--muted);margin-left:6px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;white-space:nowrap;}
-  .rn-auto-warn{color:var(--warn);border-color:var(--warn);}
 </style>
 </head>
 <body>
@@ -330,13 +328,6 @@
     return s.replace(/\\n/g, ' ').replace(/\\"/g, '"').replace(/\\\\/g, '\\').trim();
   }
 
-  // JS/JSON string bodies (e.g. inside a "data":{"label":"..."} block) use real
-  // JSON escaping, unlike the ad hoc locale .txt values decodeLocale() handles.
-  function unescapeJsonString(s) {
-    try { return JSON.parse('"' + s + '"'); }
-    catch (e) { return s.replace(/\\"/g, '"').replace(/\\\\/g, '\\'); }
-  }
-
   // ---- string-aware structural scan of the data file ----------------------
   // Walk every {...} object once. For each closed object, hand its source slice
   // to the collectors. This avoids fragile backtracking and nested-brace traps,
@@ -361,26 +352,6 @@
     }
   }
 
-  // Same string-aware brace-walk as scanObjects, but returns one balanced {...}
-  // slice starting at a known '{' index. Used to safely bound a "data":{...}
-  // block even if an author-typed label ever contains a literal '}'.
-  function sliceBalanced(text, openIdx) {
-    var depth = 0, inStr = false, esc = false;
-    for (var i = openIdx, n = text.length; i < n; i++) {
-      var ch = text.charCodeAt(i);
-      if (inStr) {
-        if (esc) { esc = false; }
-        else if (ch === 92) { esc = true; }
-        else if (ch === 34) { inStr = false; }
-        continue;
-      }
-      if (ch === 34) { inStr = true; }
-      else if (ch === 123) { depth++; }
-      else if (ch === 125) { depth--; if (depth === 0) return text.slice(openIdx, i + 1); }
-    }
-    return null;
-  }
-
   function firstId(obj, prefix) {
     var re = new RegExp('"id":"(' + prefix + '_[0-9A-Fa-f_]+)"');
     var m = re.exec(obj);
@@ -389,19 +360,6 @@
   function grabThumb(obj) {
     var m = /"thumbnailUrl":"(media\/[^"]+)"/.exec(obj);
     return m ? m[1] : null;
-  }
-  // 3DVista gives every editor component an internal name, independent of any
-  // public locale text: most media/hotspot classes use "data":{"label":"..."},
-  // some UI components use "data":{"name":"..."} instead — check both. Takes the
-  // FIRST "data":{...} in the slice, which is always the object's own (nested
-  // children's "data" blocks, if any, serialize later in the same slice).
-  function grabDataLabel(obj) {
-    var di = obj.indexOf('"data":{');
-    if (di < 0) return null;
-    var seg = sliceBalanced(obj, di + 7); // +7 = index of the '{' itself
-    if (!seg) return null;
-    var m = /"label":"((?:\\.|[^"\\])*)"/.exec(seg) || /"name":"((?:\\.|[^"\\])*)"/.exec(seg);
-    return m ? unescapeJsonString(m[1]) : null;
   }
   // refs inside arrays look like  "this.overlay_XXX"  /  "this.HotspotPanoramaOverlayArea_YYY"
   function refsOfArray(obj, arrayKey, idPrefix) {
@@ -443,9 +401,6 @@
     var thumbById = {};         // mediaId   -> thumbnailUrl
     var adjAll = [];            // every AdjacentPanorama link {start,to,yaw}
     var panoRanges = [];        // every Panorama object {id,start,end} (for graph build)
-    var overlayDataLabel = {};  // overlayId -> 3DVista editor's own pin name (fallback hotspot name)
-    var structLabelById = {};   // mediaId   -> 3DVista editor's own name (fallback scene/photo/video/album name)
-    var mediaSeen = {};         // mediaId   -> 1, for every panorama/photo/video/album id found structurally
 
     scanObjects(data, function (text, start, end) {
       var obj = text.slice(start, end);
@@ -458,10 +413,6 @@
         if (ovId) {
           var areas = refsOfArray(obj, 'areas', 'HotspotPanoramaOverlayArea');
           if (areas.length) overlayAreas[ovId] = areas;
-          if (!overlayDataLabel[ovId]) {
-            var ovLbl = grabDataLabel(obj);
-            if (ovLbl) overlayDataLabel[ovId] = ovLbl;
-          }
         }
       }
       // scene-graph: each AdjacentPanorama carries a yaw + target panorama +
@@ -491,25 +442,13 @@
           }
           var t = grabThumb(obj);
           if (t && !thumbById[pId]) thumbById[pId] = t;
-          mediaSeen[pId] = 1;
-          if (!structLabelById[pId]) {
-            var pLbl = grabDataLabel(obj);
-            if (pLbl) structLabelById[pId] = pLbl;
-          }
         }
       }
-      // thumbnails + structural names for photos / videos / albums / panoramas
-      // (object whose own id carries these) — recorded regardless of whether
-      // locale text exists for it, so it can still become a searchable item.
+      // thumbnails for photos / videos / albums (object whose own id has a label)
       var idm = /"id":"((?:photo|video|album|panorama)_[0-9A-Fa-f_]+)"/.exec(obj);
       if (idm) {
-        mediaSeen[idm[1]] = 1;
         var th = grabThumb(obj);
         if (th && !thumbById[idm[1]]) thumbById[idm[1]] = th;
-        if (!structLabelById[idm[1]]) {
-          var dLbl = grabDataLabel(obj);
-          if (dLbl) structLabelById[idm[1]] = dLbl;
-        }
       }
     });
 
@@ -525,65 +464,28 @@
           if (!best || (pr.end - pr.start) < (best.end - best.start)) best = pr;
         }
       });
-      // A dual-skin export ships the SAME tour data twice (script_general.js +
-      // script_mobile.js), so each doorway is seen once per skin. Keep one edge per
-      // target so the scene graph isn't doubled.
-      if (best && a.to) {
-        var nbs = graph[best.id].neighbors;
-        if (!nbs.some(function (n) { return n.to === a.to; }))
-          nbs.push({ to: a.to, yaw: a.yaw, pitch: a.pitch, overlayID: a.overlayID });
-      }
+      if (best && a.to) graph[best.id].neighbors.push({ to: a.to, yaw: a.yaw, pitch: a.pitch, overlayID: a.overlayID });
     });
 
-    // ---- build searchable items from every element found, locale or not ----
-    // Priority for the display/search name: a public locale label/tooltip first
-    // (human-authored, and the only thing navigation can reliably use), then the
-    // 3DVista editor's own internal name (always present, but not author-facing),
-    // then a generic placeholder as a last-resort safety net. Whichever name(s)
-    // weren't chosen are kept in altNames so they stay searchable too.
+    // ---- build searchable items from the locale label map -----------------
     var items = [];
     var TYPE = { panorama: 'scene', photo: 'photo', video: 'video', album: 'album' };
-    var TYPE_DISPLAY = { scene: 'Scene', hotspot: 'Hotspot', photo: 'Photo', video: 'Video', album: 'Album' };
-    var placeholderCounters = {};
-    function nextPlaceholder(type) {
-      placeholderCounters[type] = (placeholderCounters[type] || 0) + 1;
-      return (TYPE_DISPLAY[type] || type) + ' ' + placeholderCounters[type];
-    }
-    function altNamesOf(chosen, candidates) {
-      var out = [];
-      candidates.forEach(function (n) { if (n && n !== chosen && out.indexOf(n) < 0) out.push(n); });
-      return out.length ? out : undefined;
-    }
 
-    var mediaIds = {};
-    Object.keys(loc).forEach(function (id) { mediaIds[id] = 1; });
-    Object.keys(mediaSeen).forEach(function (id) { mediaIds[id] = 1; });
-    panoRanges.forEach(function (pr) { mediaIds[pr.id] = 1; });
-
-    Object.keys(mediaIds).forEach(function (id) {
+    Object.keys(loc).forEach(function (id) {
+      var entry = loc[id];
+      if (!entry.label) return;
       var pfx = id.split('_')[0].toLowerCase();
       var type = TYPE[pfx];
       if (!type) return;
-      var entry = loc[id] || {};
-      var localeLabel = entry.label || null;
-      var structLabel = structLabelById[id] || null;
-      var chosen, nameSource;
-      if (localeLabel) { chosen = localeLabel; nameSource = 'locale'; }
-      else if (structLabel) { chosen = structLabel; nameSource = 'structural'; }
-      else { chosen = nextPlaceholder(type); nameSource = 'generated'; }
       items.push({
         type: type,
         id: id,
-        label: localeLabel || chosen,  // navigation target — real locale label if one exists;
-                                        // only a fallback name when none exists at all (may not
-                                        // be navigable — the widget already degrades gracefully)
-        name: chosen,                  // display/search name (the builder may rename this)
-        nameSource: nameSource,        // 'locale' | 'structural' | 'generated' — Step 2 UI only
-        altNames: altNamesOf(chosen, [localeLabel, structLabel]),
+        label: entry.label,          // original 3DVista name — used for navigation
+        name: entry.label,           // display/search name (the builder may rename this)
         subtitle: entry.subtitle || null,
         thumb: thumbById[id] || null
       });
-      if (type === 'scene' && graph[id] && localeLabel) graph[id].label = localeLabel;
+      if (type === 'scene' && graph[id]) graph[id].label = entry.label;
     });
 
     // ---- hotspots ---------------------------------------------------------
@@ -593,23 +495,17 @@
       panoOverlays[panoId].forEach(function (ovId) {
         var areas = overlayAreas[ovId];
         if (!areas) return;
-        var overlayLabel = overlayDataLabel[ovId] || null;
         areas.forEach(function (areaId) {
           var le = loc[areaId];
           var tip = le && le.toolTip ? le.toolTip : null;
-          var chosen, nameSource;
-          if (tip) { chosen = tip; nameSource = 'locale'; }
-          else if (overlayLabel) { chosen = overlayLabel; nameSource = 'structural'; }
-          else { chosen = nextPlaceholder('hotspot'); nameSource = 'generated'; }
+          if (!tip) return;
           items.push({
             type: 'hotspot',
             id: areaId,
-            label: chosen,             // presentational — hotspot navigation never reads item.label
-            name: chosen,              // display/search name (renamable)
-            nameSource: nameSource,    // 'locale' | 'structural' | 'generated' — Step 2 UI only
-            altNames: altNamesOf(chosen, [tip, overlayLabel]),
+            label: tip,                // original tooltip
+            name: tip,                 // display/search name (renamable)
             panoId: panoId,
-            panoLabel: panoLabel,      // structural — drives hotspot scene-jump, unchanged
+            panoLabel: panoLabel,
             overlayId: ovId,
             thumb: thumbById[panoId] || null
           });
@@ -766,8 +662,9 @@
 
   function currentSceneId() {
     try {
-      var pl = pano();
-      var v = pl && pl.get && pl.get('panorama');
+      var p = window.tour && window.tour.player;
+      var pano = p && p.getById && p.getById('MainViewerPanoramaPlayer');
+      var v = pano && pano.get && pano.get('panorama');
       if (!v) return null;
       if (typeof v === 'string') return v;
       return (v.get && v.get('id')) || null;   // 3DVista may return the media object
@@ -797,28 +694,7 @@
     for (var i = 0; i < nb.length; i++) if (nb[i].to === b) return nb[i];
     return null;
   }
-  // Does this object expose the panorama-player API we drive?
-  function panoUsable(o) { return !!(o && typeof o.getScreenPosition === 'function' && typeof o.get === 'function' && typeof o.moveLeft === 'function'); }
-  // Resolve the ACTIVE panorama player. On a dual-skin (desktop/mobile) tour each skin has
-  // its own PanoramaPlayer with a different id (the mobile skin uses MainViewer_mobilePanorama-
-  // Player), so a hardcoded id returns null on the mobile skin. Fall back to the PanoramaPlayer
-  // that currently has media loaded — the skin actually on screen — so navigation and guided
-  // walks work on both skins.
-  function pano() {
-    try {
-      var p = window.tour && window.tour.player; if (!p) return null;
-      var direct = p.getById && p.getById('MainViewerPanoramaPlayer');
-      if (panoUsable(direct)) return direct;                  // desktop skin / default-named player
-      var all = (p.getByClassName && p.getByClassName('PanoramaPlayer')) || [];
-      var anyUsable = null;
-      for (var i = 0; i < all.length; i++) {
-        if (!panoUsable(all[i])) continue;
-        anyUsable = anyUsable || all[i];
-        try { if (all[i].get('panorama')) return all[i]; } catch (e) { /* keep looking */ }
-      }
-      return anyUsable;                                       // last resort: any usable one
-    } catch (e) { return null; }
-  }
+  function pano() { try { return window.tour.player.getById('MainViewerPanoramaPlayer'); } catch (e) { return null; } }
 
   function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
@@ -1113,26 +989,21 @@
   function injectStyle() {
     var pos = CFG.position || 'top-right', vert = pos.indexOf('bottom') === 0 ? 'bottom' : 'top';
     var horz = pos.indexOf('center') >= 0 ? 'center' : (pos.indexOf('left') >= 0 ? 'left' : 'right');
-    // when centered, pin to the horizontal middle and grow symmetrically.
-    // safe-area-inset keeps the icon clear of phone notches / rounded corners / home bar.
-    var safeV = vert === 'top'
-      ? 'top:calc(16px + env(safe-area-inset-top,0px));'
-      : 'bottom:calc(16px + env(safe-area-inset-bottom,0px));';
+    // when centered, pin to the horizontal middle and grow symmetrically
     var place = horz === 'center'
-      ? safeV + 'left:50%;transform:translateX(-50%);'
-      : safeV + horz + ':calc(16px + env(safe-area-inset-' + horz + ',0px));';
+      ? vert + ':16px;left:50%;transform:translateX(-50%);'
+      : vert + ':16px;' + horz + ':16px;';
     var resAlign = horz === 'center' ? 'margin-left:auto;margin-right:auto;'
                  : (horz === 'left' ? '' : 'margin-left:auto;');
     var css = '' +
-    '#vtsearch{position:fixed;' + place + 'z-index:99999;max-width:94vw;-webkit-tap-highlight-color:transparent;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}' +
+    '#vtsearch{position:fixed;' + place + 'z-index:99999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}' +
     '#vtsearch *{box-sizing:border-box;}' +
-    '#vtsearch button{touch-action:manipulation;}' +
     '#vtsearch .vts-bar{display:flex;align-items:center;background:rgba(20,22,26,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);border-radius:24px;height:44px;overflow:hidden;transition:width .22s ease, box-shadow .2s;width:44px;box-shadow:0 4px 18px rgba(0,0,0,.35);}' +
     '#vtsearch.open .vts-bar{width:320px;box-shadow:0 8px 30px rgba(0,0,0,.5);}' +
-    '@media (max-width:480px){#vtsearch.open .vts-bar{width:min(86vw,360px);}}' +
+    '@media (max-width:480px){#vtsearch.open .vts-bar{width:78vw;}}' +
     '#vtsearch .vts-btn{flex:0 0 44px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:0;padding:0;}' +
     '#vtsearch .vts-btn svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;}' +
-    '#vtsearch .vts-input{flex:1;min-width:0;background:none;border:0;outline:none;color:#fff;font-size:16px;padding:0 6px 0 2px;opacity:0;transition:opacity .2s;}' +
+    '#vtsearch .vts-input{flex:1;min-width:0;background:none;border:0;outline:none;color:#fff;font-size:15px;padding:0 6px 0 2px;opacity:0;transition:opacity .2s;}' +
     '#vtsearch.open .vts-input{opacity:1;}' +
     '#vtsearch .vts-clear{flex:0 0 30px;width:30px;height:44px;border:0;background:none;color:#9aa3ad;cursor:pointer;font-size:18px;display:none;}' +
     '#vtsearch.open .vts-clear.show{display:block;}' +
@@ -1152,7 +1023,7 @@
     '#vtsearch .vts-guide{flex:0 0 auto;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;border-radius:9px;padding:3px 9px;cursor:pointer;margin-left:6px;white-space:nowrap;}' +
     '#vtsearch .vts-guide:hover{background:' + CFG.accent + ';color:#06121f;border-color:' + CFG.accent + ';}' +
     '#vtsearch ::-webkit-scrollbar{width:8px;}#vtsearch ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:4px;}' +
-    '#vtsearch-guide{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));max-width:94vw;z-index:100000;display:none;align-items:center;gap:12px;background:rgba(20,22,26,.94);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:10px 14px 10px 18px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);}' +
+    '#vtsearch-guide{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:100000;display:none;align-items:center;gap:12px;background:rgba(20,22,26,.94);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:10px 14px 10px 18px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);}' +
     '#vtsearch-guide .vts-g-stop{background:' + CFG.accent + ';color:#06121f;border:0;border-radius:14px;padding:6px 14px;font-weight:600;cursor:pointer;font-size:13px;}';
     var el = document.createElement('style');
     el.id = 'vtsearch-style';
@@ -1515,9 +1386,6 @@
       out.name=custom.trim();
       if(it.label && it.label!==out.name) aliases.push(it.label);   // keep original searchable
     } else { out.name=it.label!=null?it.label:it.name; }
-    // any name the parser found but didn't choose as primary (e.g. a tooltip AND a
-    // distinct 3DVista editor name) stays searchable too
-    (it.altNames||[]).forEach(function(n){ if(n && n!==out.name && aliases.indexOf(n)<0) aliases.push(n); });
     parseKeywords((state.keywords||{})[key]).forEach(function(kw){ if(aliases.indexOf(kw)<0 && kw!==out.name) aliases.push(kw); });
     out.aliases=aliases;
     return out;
@@ -1565,12 +1433,7 @@
 
         var main=document.createElement('div'); main.className='rn-main';
         var orig=document.createElement('div'); orig.className='rn-orig';
-        var srcNote = it.nameSource==='generated'
-          ? ' <span class="rn-auto rn-auto-warn" title="No tooltip or editor name was found for this item — this is a placeholder. Give it a real name below.">needs a name</span>'
-          : it.nameSource==='structural'
-            ? ' <span class="rn-auto" title="No public tooltip/label was set in 3DVista for this item — using its internal editor name instead.">auto-named</span>'
-            : '';
-        orig.innerHTML='Original name: <b>'+esc(it.label||'(unnamed)')+'</b>'+srcNote;
+        orig.innerHTML='Original name: <b>'+esc(it.label||'(unnamed)')+'</b>';
         var fields=document.createElement('div'); fields.className='rn-fields';
 
         var w1=document.createElement('div'); w1.className='fwrap';

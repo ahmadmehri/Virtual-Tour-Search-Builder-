@@ -105,8 +105,9 @@
 
   function currentSceneId() {
     try {
-      var pl = pano();
-      var v = pl && pl.get && pl.get('panorama');
+      var p = window.tour && window.tour.player;
+      var pano = p && p.getById && p.getById('MainViewerPanoramaPlayer');
+      var v = pano && pano.get && pano.get('panorama');
       if (!v) return null;
       if (typeof v === 'string') return v;
       return (v.get && v.get('id')) || null;   // 3DVista may return the media object
@@ -136,28 +137,7 @@
     for (var i = 0; i < nb.length; i++) if (nb[i].to === b) return nb[i];
     return null;
   }
-  // Does this object expose the panorama-player API we drive?
-  function panoUsable(o) { return !!(o && typeof o.getScreenPosition === 'function' && typeof o.get === 'function' && typeof o.moveLeft === 'function'); }
-  // Resolve the ACTIVE panorama player. On a dual-skin (desktop/mobile) tour each skin has
-  // its own PanoramaPlayer with a different id (the mobile skin uses MainViewer_mobilePanorama-
-  // Player), so a hardcoded id returns null on the mobile skin. Fall back to the PanoramaPlayer
-  // that currently has media loaded — the skin actually on screen — so navigation and guided
-  // walks work on both skins.
-  function pano() {
-    try {
-      var p = window.tour && window.tour.player; if (!p) return null;
-      var direct = p.getById && p.getById('MainViewerPanoramaPlayer');
-      if (panoUsable(direct)) return direct;                  // desktop skin / default-named player
-      var all = (p.getByClassName && p.getByClassName('PanoramaPlayer')) || [];
-      var anyUsable = null;
-      for (var i = 0; i < all.length; i++) {
-        if (!panoUsable(all[i])) continue;
-        anyUsable = anyUsable || all[i];
-        try { if (all[i].get('panorama')) return all[i]; } catch (e) { /* keep looking */ }
-      }
-      return anyUsable;                                       // last resort: any usable one
-    } catch (e) { return null; }
-  }
+  function pano() { try { return window.tour.player.getById('MainViewerPanoramaPlayer'); } catch (e) { return null; } }
 
   function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
@@ -452,26 +432,21 @@
   function injectStyle() {
     var pos = CFG.position || 'top-right', vert = pos.indexOf('bottom') === 0 ? 'bottom' : 'top';
     var horz = pos.indexOf('center') >= 0 ? 'center' : (pos.indexOf('left') >= 0 ? 'left' : 'right');
-    // when centered, pin to the horizontal middle and grow symmetrically.
-    // safe-area-inset keeps the icon clear of phone notches / rounded corners / home bar.
-    var safeV = vert === 'top'
-      ? 'top:calc(16px + env(safe-area-inset-top,0px));'
-      : 'bottom:calc(16px + env(safe-area-inset-bottom,0px));';
+    // when centered, pin to the horizontal middle and grow symmetrically
     var place = horz === 'center'
-      ? safeV + 'left:50%;transform:translateX(-50%);'
-      : safeV + horz + ':calc(16px + env(safe-area-inset-' + horz + ',0px));';
+      ? vert + ':16px;left:50%;transform:translateX(-50%);'
+      : vert + ':16px;' + horz + ':16px;';
     var resAlign = horz === 'center' ? 'margin-left:auto;margin-right:auto;'
                  : (horz === 'left' ? '' : 'margin-left:auto;');
     var css = '' +
-    '#vtsearch{position:fixed;' + place + 'z-index:99999;max-width:94vw;-webkit-tap-highlight-color:transparent;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}' +
+    '#vtsearch{position:fixed;' + place + 'z-index:99999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}' +
     '#vtsearch *{box-sizing:border-box;}' +
-    '#vtsearch button{touch-action:manipulation;}' +
     '#vtsearch .vts-bar{display:flex;align-items:center;background:rgba(20,22,26,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);border-radius:24px;height:44px;overflow:hidden;transition:width .22s ease, box-shadow .2s;width:44px;box-shadow:0 4px 18px rgba(0,0,0,.35);}' +
     '#vtsearch.open .vts-bar{width:320px;box-shadow:0 8px 30px rgba(0,0,0,.5);}' +
-    '@media (max-width:480px){#vtsearch.open .vts-bar{width:min(86vw,360px);}}' +
+    '@media (max-width:480px){#vtsearch.open .vts-bar{width:78vw;}}' +
     '#vtsearch .vts-btn{flex:0 0 44px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:0;padding:0;}' +
     '#vtsearch .vts-btn svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;}' +
-    '#vtsearch .vts-input{flex:1;min-width:0;background:none;border:0;outline:none;color:#fff;font-size:16px;padding:0 6px 0 2px;opacity:0;transition:opacity .2s;}' +
+    '#vtsearch .vts-input{flex:1;min-width:0;background:none;border:0;outline:none;color:#fff;font-size:15px;padding:0 6px 0 2px;opacity:0;transition:opacity .2s;}' +
     '#vtsearch.open .vts-input{opacity:1;}' +
     '#vtsearch .vts-clear{flex:0 0 30px;width:30px;height:44px;border:0;background:none;color:#9aa3ad;cursor:pointer;font-size:18px;display:none;}' +
     '#vtsearch.open .vts-clear.show{display:block;}' +
@@ -491,7 +466,7 @@
     '#vtsearch .vts-guide{flex:0 0 auto;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;border-radius:9px;padding:3px 9px;cursor:pointer;margin-left:6px;white-space:nowrap;}' +
     '#vtsearch .vts-guide:hover{background:' + CFG.accent + ';color:#06121f;border-color:' + CFG.accent + ';}' +
     '#vtsearch ::-webkit-scrollbar{width:8px;}#vtsearch ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:4px;}' +
-    '#vtsearch-guide{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));max-width:94vw;z-index:100000;display:none;align-items:center;gap:12px;background:rgba(20,22,26,.94);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:10px 14px 10px 18px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);}' +
+    '#vtsearch-guide{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:100000;display:none;align-items:center;gap:12px;background:rgba(20,22,26,.94);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:10px 14px 10px 18px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);}' +
     '#vtsearch-guide .vts-g-stop{background:' + CFG.accent + ';color:#06121f;border:0;border-radius:14px;padding:6px 14px;font-weight:600;cursor:pointer;font-size:13px;}';
     var el = document.createElement('style');
     el.id = 'vtsearch-style';
