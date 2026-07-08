@@ -107,6 +107,8 @@
   .rn-row input{width:100%;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:13px;}
   .rn-row input:focus{outline:none;border-color:var(--accent);}
   .rn-row input.changed{border-color:var(--accent);background:rgba(45,163,255,.08);}
+  .rn-auto{font-size:10.5px;color:var(--muted);margin-left:6px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;white-space:nowrap;}
+  .rn-auto-warn{color:var(--warn);border-color:var(--warn);}
 </style>
 </head>
 <body>
@@ -501,6 +503,9 @@
       out.name=custom.trim();
       if(it.label && it.label!==out.name) aliases.push(it.label);   // keep original searchable
     } else { out.name=it.label!=null?it.label:it.name; }
+    // any name the parser found but didn't choose as primary (e.g. a tooltip AND a
+    // distinct 3DVista editor name) stays searchable too
+    (it.altNames||[]).forEach(function(n){ if(n && n!==out.name && aliases.indexOf(n)<0) aliases.push(n); });
     parseKeywords((state.keywords||{})[key]).forEach(function(kw){ if(aliases.indexOf(kw)<0 && kw!==out.name) aliases.push(kw); });
     out.aliases=aliases;
     return out;
@@ -548,7 +553,12 @@
 
         var main=document.createElement('div'); main.className='rn-main';
         var orig=document.createElement('div'); orig.className='rn-orig';
-        orig.innerHTML='Original name: <b>'+esc(it.label||'(unnamed)')+'</b>';
+        var srcNote = it.nameSource==='generated'
+          ? ' <span class="rn-auto rn-auto-warn" title="No tooltip or editor name was found for this item — this is a placeholder. Give it a real name below.">needs a name</span>'
+          : it.nameSource==='structural'
+            ? ' <span class="rn-auto" title="No public tooltip/label was set in 3DVista for this item — using its internal editor name instead.">auto-named</span>'
+            : '';
+        orig.innerHTML='Original name: <b>'+esc(it.label||'(unnamed)')+'</b>'+srcNote;
         var fields=document.createElement('div'); fields.className='rn-fields';
 
         var w1=document.createElement('div'); w1.className='fwrap';

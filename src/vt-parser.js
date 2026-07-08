@@ -41,6 +41,13 @@
     return s.replace(/\\n/g, ' ').replace(/\\"/g, '"').replace(/\\\\/g, '\\').trim();
   }
 
+  // JS/JSON string bodies (e.g. inside a "data":{"label":"..."} block) use real
+  // JSON escaping, unlike the ad hoc locale .txt values decodeLocale() handles.
+  function unescapeJsonString(s) {
+    try { return JSON.parse('"' + s + '"'); }
+    catch (e) { return s.replace(/\\"/g, '"').replace(/\\\\/g, '\\'); }
+  }
+
   // ---- string-aware structural scan of the data file ----------------------
   // Walk every {...} object once. For each closed object, hand its source slice
   // to the collectors. This avoids fragile backtracking and nested-brace traps,
@@ -65,6 +72,26 @@
     }
   }
 
+  // Same string-aware brace-walk as scanObjects, but returns one balanced {...}
+  // slice starting at a known '{' index. Used to safely bound a "data":{...}
+  // block even if an author-typed label ever contains a literal '}'.
+  function sliceBalanced(text, openIdx) {
+    var depth = 0, inStr = false, esc = false;
+    for (var i = openIdx, n = text.length; i < n; i++) {
+      var ch = text.charCodeAt(i);
+      if (inStr) {
+        if (esc) { esc = false; }
+        else if (ch === 92) { esc = true; }
+        else if (ch === 34) { inStr = false; }
+        continue;
+      }
+      if (ch === 34) { inStr = true; }
+      else if (ch === 123) { depth++; }
+      else if (ch === 125) { depth--; if (depth === 0) return text.slice(openIdx, i + 1); }
+    }
+    return null;
+  }
+
   function firstId(obj, prefix) {
     var re = new RegExp('"id":"(' + prefix + '_[0-9A-Fa-f_]+)"');
     var m = re.exec(obj);
@@ -73,6 +100,19 @@
   function grabThumb(obj) {
     var m = /"thumbnailUrl":"(media\/[^"]+)"/.exec(obj);
     return m ? m[1] : null;
+  }
+  // 3DVista gives every editor component an internal name, independent of any
+  // public locale text: most media/hotspot classes use "data":{"label":"..."},
+  // some UI components use "data":{"name":"..."} instead — check both. Takes the
+  // FIRST "data":{...} in the slice, which is always the object's own (nested
+  // children's "data" blocks, if any, serialize later in the same slice).
+  function grabDataLabel(obj) {
+    var di = obj.indexOf('"data":{');
+    if (di < 0) return null;
+    var seg = sliceBalanced(obj, di + 7); // +7 = index of the '{' itself
+    if (!seg) return null;
+    var m = /"label":"((?:\\.|[^"\\])*)"/.exec(seg) || /"name":"((?:\\.|[^"\\])*)"/.exec(seg);
+    return m ? unescapeJsonString(m[1]) : null;
   }
   // refs inside arrays look like  "this.overlay_XXX"  /  "this.HotspotPanoramaOverlayArea_YYY"
   function refsOfArray(obj, arrayKey, idPrefix) {
@@ -114,6 +154,9 @@
     var thumbById = {};         // mediaId   -> thumbnailUrl
     var adjAll = [];            // every AdjacentPanorama link {start,to,yaw}
     var panoRanges = [];        // every Panorama object {id,start,end} (for graph build)
+    var overlayDataLabel = {};  // overlayId -> 3DVista editor's own pin name (fallback hotspot name)
+    var structLabelById = {};   // mediaId   -> 3DVista editor's own name (fallback scene/photo/video/album name)
+    var mediaSeen = {};         // mediaId   -> 1, for every panorama/photo/video/album id found structurally
 
     scanObjects(data, function (text, start, end) {
       var obj = text.slice(start, end);
@@ -126,6 +169,10 @@
         if (ovId) {
           var areas = refsOfArray(obj, 'areas', 'HotspotPanoramaOverlayArea');
           if (areas.length) overlayAreas[ovId] = areas;
+          if (!overlayDataLabel[ovId]) {
+            var ovLbl = grabDataLabel(obj);
+            if (ovLbl) overlayDataLabel[ovId] = ovLbl;
+          }
         }
       }
       // scene-graph: each AdjacentPanorama carries a yaw + target panorama +
@@ -155,13 +202,25 @@
           }
           var t = grabThumb(obj);
           if (t && !thumbById[pId]) thumbById[pId] = t;
+          mediaSeen[pId] = 1;
+          if (!structLabelById[pId]) {
+            var pLbl = grabDataLabel(obj);
+            if (pLbl) structLabelById[pId] = pLbl;
+          }
         }
       }
-      // thumbnails for photos / videos / albums (object whose own id has a label)
+      // thumbnails + structural names for photos / videos / albums / panoramas
+      // (object whose own id carries these) — recorded regardless of whether
+      // locale text exists for it, so it can still become a searchable item.
       var idm = /"id":"((?:photo|video|album|panorama)_[0-9A-Fa-f_]+)"/.exec(obj);
       if (idm) {
+        mediaSeen[idm[1]] = 1;
         var th = grabThumb(obj);
         if (th && !thumbById[idm[1]]) thumbById[idm[1]] = th;
+        if (!structLabelById[idm[1]]) {
+          var dLbl = grabDataLabel(obj);
+          if (dLbl) structLabelById[idm[1]] = dLbl;
+        }
       }
     });
 
@@ -177,28 +236,65 @@
           if (!best || (pr.end - pr.start) < (best.end - best.start)) best = pr;
         }
       });
-      if (best && a.to) graph[best.id].neighbors.push({ to: a.to, yaw: a.yaw, pitch: a.pitch, overlayID: a.overlayID });
+      // A dual-skin export ships the SAME tour data twice (script_general.js +
+      // script_mobile.js), so each doorway is seen once per skin. Keep one edge per
+      // target so the scene graph isn't doubled.
+      if (best && a.to) {
+        var nbs = graph[best.id].neighbors;
+        if (!nbs.some(function (n) { return n.to === a.to; }))
+          nbs.push({ to: a.to, yaw: a.yaw, pitch: a.pitch, overlayID: a.overlayID });
+      }
     });
 
-    // ---- build searchable items from the locale label map -----------------
+    // ---- build searchable items from every element found, locale or not ----
+    // Priority for the display/search name: a public locale label/tooltip first
+    // (human-authored, and the only thing navigation can reliably use), then the
+    // 3DVista editor's own internal name (always present, but not author-facing),
+    // then a generic placeholder as a last-resort safety net. Whichever name(s)
+    // weren't chosen are kept in altNames so they stay searchable too.
     var items = [];
     var TYPE = { panorama: 'scene', photo: 'photo', video: 'video', album: 'album' };
+    var TYPE_DISPLAY = { scene: 'Scene', hotspot: 'Hotspot', photo: 'Photo', video: 'Video', album: 'Album' };
+    var placeholderCounters = {};
+    function nextPlaceholder(type) {
+      placeholderCounters[type] = (placeholderCounters[type] || 0) + 1;
+      return (TYPE_DISPLAY[type] || type) + ' ' + placeholderCounters[type];
+    }
+    function altNamesOf(chosen, candidates) {
+      var out = [];
+      candidates.forEach(function (n) { if (n && n !== chosen && out.indexOf(n) < 0) out.push(n); });
+      return out.length ? out : undefined;
+    }
 
-    Object.keys(loc).forEach(function (id) {
-      var entry = loc[id];
-      if (!entry.label) return;
+    var mediaIds = {};
+    Object.keys(loc).forEach(function (id) { mediaIds[id] = 1; });
+    Object.keys(mediaSeen).forEach(function (id) { mediaIds[id] = 1; });
+    panoRanges.forEach(function (pr) { mediaIds[pr.id] = 1; });
+
+    Object.keys(mediaIds).forEach(function (id) {
       var pfx = id.split('_')[0].toLowerCase();
       var type = TYPE[pfx];
       if (!type) return;
+      var entry = loc[id] || {};
+      var localeLabel = entry.label || null;
+      var structLabel = structLabelById[id] || null;
+      var chosen, nameSource;
+      if (localeLabel) { chosen = localeLabel; nameSource = 'locale'; }
+      else if (structLabel) { chosen = structLabel; nameSource = 'structural'; }
+      else { chosen = nextPlaceholder(type); nameSource = 'generated'; }
       items.push({
         type: type,
         id: id,
-        label: entry.label,          // original 3DVista name — used for navigation
-        name: entry.label,           // display/search name (the builder may rename this)
+        label: localeLabel || chosen,  // navigation target — real locale label if one exists;
+                                        // only a fallback name when none exists at all (may not
+                                        // be navigable — the widget already degrades gracefully)
+        name: chosen,                  // display/search name (the builder may rename this)
+        nameSource: nameSource,        // 'locale' | 'structural' | 'generated' — Step 2 UI only
+        altNames: altNamesOf(chosen, [localeLabel, structLabel]),
         subtitle: entry.subtitle || null,
         thumb: thumbById[id] || null
       });
-      if (type === 'scene' && graph[id]) graph[id].label = entry.label;
+      if (type === 'scene' && graph[id] && localeLabel) graph[id].label = localeLabel;
     });
 
     // ---- hotspots ---------------------------------------------------------
@@ -208,17 +304,23 @@
       panoOverlays[panoId].forEach(function (ovId) {
         var areas = overlayAreas[ovId];
         if (!areas) return;
+        var overlayLabel = overlayDataLabel[ovId] || null;
         areas.forEach(function (areaId) {
           var le = loc[areaId];
           var tip = le && le.toolTip ? le.toolTip : null;
-          if (!tip) return;
+          var chosen, nameSource;
+          if (tip) { chosen = tip; nameSource = 'locale'; }
+          else if (overlayLabel) { chosen = overlayLabel; nameSource = 'structural'; }
+          else { chosen = nextPlaceholder('hotspot'); nameSource = 'generated'; }
           items.push({
             type: 'hotspot',
             id: areaId,
-            label: tip,                // original tooltip
-            name: tip,                 // display/search name (renamable)
+            label: chosen,             // presentational — hotspot navigation never reads item.label
+            name: chosen,              // display/search name (renamable)
+            nameSource: nameSource,    // 'locale' | 'structural' | 'generated' — Step 2 UI only
+            altNames: altNamesOf(chosen, [tip, overlayLabel]),
             panoId: panoId,
-            panoLabel: panoLabel,
+            panoLabel: panoLabel,      // structural — drives hotspot scene-jump, unchanged
             overlayId: ovId,
             thumb: thumbById[panoId] || null
           });
