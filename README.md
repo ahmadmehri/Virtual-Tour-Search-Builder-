@@ -1,8 +1,10 @@
 <p align="center">
-  <img src="docs/hero.svg" alt="VT Search Builder" width="100%">
-</p>
 
-https://ahmadmehri.github.io/Virtual-Tour-Search-Builder-/VT-Search-Builder.html
+  https://ahmadmehri.github.io/VT-Search-Builder/VT-Search-Builder.html
+  
+  <img src="docs/hero.svg" alt="VT Search Builder" width="100%">
+  
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-2da3ff.svg" alt="MIT License">
